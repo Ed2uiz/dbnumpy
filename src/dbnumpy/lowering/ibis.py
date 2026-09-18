@@ -990,9 +990,8 @@ class IbisLowerer:
         left = lower(expr.left).table
         right = lower(expr.right).table.view()
         joined = left.inner_join(right, left.j == right.i)
-        result = joined.group_by(i=left.i, j=right.j).aggregate(
-            x=(left.x * right.x).sum()
-        )
+        products = joined.select(i=left.i, j=right.j, product=left.x * right.x)
+        result = products.group_by("i", "j").aggregate(x=products.product.sum())
         return LoweredMatrix(result, storage_kind(expr))
 
     def _lower_broadcast(
