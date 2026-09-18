@@ -1,0 +1,467 @@
+{
+  "method": "cgroup v2; memory.max=ceiling, memory.swap.max=0; serial workers",
+  "scope": "disk-backed input; shared workflow; native materialization; validate stored summaries, entry count and up to 64 complete rows",
+  "endpoint": "native",
+  "input_cache_policy": "POSIX_FADV_DONTNEED requested on each worker's input files; Windows host cache is not controlled",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.14.7",
+  "cpu": "Intel(R) Core(TM) Ultra 5 125U",
+  "versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "duckdb": "1.5.5",
+    "datafusion": "54.0.0",
+    "pyarrow": "25.0.1",
+    "h5py": "3.16.0",
+    "scanpy": "1.12.4"
+  },
+  "limits_gib": [
+    7.510444641113281,
+    7.510448455810547
+  ],
+  "requested_limits": [
+    "max"
+  ],
+  "worker_oom_score_adj": 500,
+  "sizes": [
+    5000,
+    10000,
+    25000,
+    50000,
+    100000,
+    250000
+  ],
+  "engines": [
+    "datafusion"
+  ],
+  "repeats": 1,
+  "timeout_seconds": 600,
+  "disk_free_floor_bytes": 5368709120,
+  "engine_budget_fraction": 0.5,
+  "workflow_sha256": "c0b76e0fc6ddcc4b8d18d100f0135ab02920c69b23896c5a3e034f37e877ee11",
+  "runner_sha256": "501942b2c961662196055af6510a9a9409ae1ff5f658d7a02f06c2195dd402c7",
+  "package_source_sha256": {
+    "src/dbnumpy/__init__.py": "4c71c62663020380e5f3c6a39f3469906d7a81bbd938ddfb08fdb71e643a984e",
+    "src/dbnumpy/_version.py": "79cd578df70807225661058c7ec4767de761437dad1a726975581c29534a1a14",
+    "src/dbnumpy/backends/__init__.py": "310fa592b371058a11b7faa155f807619dcad42a5737da6d8ff72498b1621fb3",
+    "src/dbnumpy/backends/base.py": "c341f77f62413d8dcd9f596fc5acd12e1ab3e9b6358c189a15c68b4eb26a8183",
+    "src/dbnumpy/backends/capabilities.py": "cbbf29fbb4c5e6c34ff0bb035bf80dc2da51d1a8fed1d8a4bf6bb96318430dbb",
+    "src/dbnumpy/backends/datafusion.py": "df4dba25de72ec3cfbc0083b8deee07460ee37dfe83be8ff6393751620c3a55c",
+    "src/dbnumpy/backends/duckdb.py": "3a8106ecc169ba19ff4b528f1f5bd4d7906c4187c1b1a334cd6138bdb25a5c3b",
+    "src/dbnumpy/exceptions.py": "8c556a0b6ccf16fe235c6b4f2a1e7f181a00279d9156b6619e5d27d5235a1b60",
+    "src/dbnumpy/indexing.py": "3a169108c4f4be142ff597fbd9503c83bed3f6a04d6792d3f4f2c777bbf64163",
+    "src/dbnumpy/io.py": "6bfccf3432c5fd8543cc0cb13afdf724e5fad1e03f345485d91810776576ac88",
+    "src/dbnumpy/ir.py": "55c0adaf47288f59f8169e5d2ed243a8b32c1403220f43ab53582e5edf6d2972",
+    "src/dbnumpy/lowering/__init__.py": "7d38e408237060b900291aa73a8b48da642377871935cbcf7a6dd80e12eb83e6",
+    "src/dbnumpy/lowering/datafusion_native.py": "8efb7584b35261517c73ad62d93a05a0ef8c15e8dd49b17df4c958ae56616eb0",
+    "src/dbnumpy/lowering/ibis.py": "2d27d66c8f2ffa546bb415799b090e7495e081f9aa4f653008f76a7b617f5966",
+    "src/dbnumpy/lowering/pointwise.py": "4118982cec32721e8d392136b3120e9f72242c70fb7eb7a44ae19f4dff80d17a",
+    "src/dbnumpy/lowering/pointwise_sql.py": "7ff6e238497a6743d482134fa916870fe4a96bb0f85551d5e943ea3e878aa3d3",
+    "src/dbnumpy/matrix.py": "5e7c83abb49f11506c97e8e396d80265fe9bb4109e8097ed7b83b37b6397d5bc"
+  },
+  "reference_sha256": {
+    "5000": "c977499e1f86cdcc5c0b86947657eec1b97a3e13325022c9ea422316be4b6c2f",
+    "100000": "bed74538b0dac20dc43894ee3f6599ed823f6607ceeb921a131215ec2d6b7c0a",
+    "250000": "24d161afa77692e77be73431e71410cd02f163cf0eeb9b01c0dc241647c7d2e5",
+    "10000": "67783fd8dbec2e0502d45cf6edda554c11873a8d5d8fbe660c289e13a54aa5fc",
+    "25000": "a745afdab7dcc445498d049c7b281337e9d24d8d81ec5ba943ea2a2bf6bb201e",
+    "50000": "e373dbba9ae9d5623918a4d8eaf28ea72ffa83ab6ff65fd1b9d30e6f17f99767"
+  },
+  "dataset": {
+    "source_url": "https://www.10xgenomics.com/datasets/1-3-million-brain-cells-from-e-18-mice-2-standard-1-3-0",
+    "source_cells": 1306127,
+    "genes": 27998,
+    "source_nnz": 2624828308,
+    "seed": 20260916,
+    "sizes": [
+      5000,
+      10000,
+      25000,
+      50000,
+      100000,
+      250000
+    ],
+    "selected_cells": 250000,
+    "selected_nnz": 502051514,
+    "selected_indices_sha256": "514c4eec0bbec1679e3135f6f46d38d9481e4ddcf31abfaa788f45c10a2b2136",
+    "archive_sha256": "255a36ee92de25cb3568faa2c27d31fe6d0db30f285c5c977be8d6245de14044",
+    "csr_preparation_seconds": 442.14862471500004,
+    "partitions": [
+      {
+        "begin": 0,
+        "end": 5000,
+        "file": "counts-0-5000.parquet",
+        "nnz": 10020262,
+        "bytes": 22018002,
+        "sha256": "198aa103dc7b59bb9bf2a8cfa5af57ccd3f0be2170d35dc5343332ba408b0400"
+      },
+      {
+        "begin": 5000,
+        "end": 10000,
+        "file": "counts-5000-10000.parquet",
+        "nnz": 10020658,
+        "bytes": 22015221,
+        "sha256": "535e84f6cb38c19c98b95932235c589fd918f6cdd0dbc698fe4ce80779c1343b"
+      },
+      {
+        "begin": 10000,
+        "end": 25000,
+        "file": "counts-10000-25000.parquet",
+        "nnz": 30110701,
+        "bytes": 66165499,
+        "sha256": "91f9ddf15b3ce3d7fd495500b6683765e8bb161c899b23bb318724c940b8a087"
+      },
+      {
+        "begin": 25000,
+        "end": 50000,
+        "file": "counts-25000-50000.parquet",
+        "nnz": 50294507,
+        "bytes": 110561941,
+        "sha256": "b86fcb953d491ec45d13f4091172b9b5d9a7dbdb5393694f1726c01532d6960f"
+      },
+      {
+        "begin": 50000,
+        "end": 100000,
+        "file": "counts-50000-100000.parquet",
+        "nnz": 100239631,
+        "bytes": 220331574,
+        "sha256": "4cef896a9543e6bbcf52267e43a99220a716c9b9c4910ed514fa84ff7fb13be9"
+      },
+      {
+        "begin": 100000,
+        "end": 250000,
+        "file": "counts-100000-250000.parquet",
+        "nnz": 301365755,
+        "bytes": 662203384,
+        "sha256": "3f985618ca7d4ec6b9815f03ce0be75b8a7626c477ce6f641b921ee8a94f5a3a"
+      }
+    ],
+    "csr_canonicalization_seconds": 310.69618858900003,
+    "parquet_preparation_seconds": 136.02104242199994,
+    "duckdb_preparation_seconds": 198.45532428299998,
+    "duckdb_bytes": 1608790016,
+    "data.npy_sha256": "f81e6915550aa664f0ac6e6ed8cc3c56a18802d3a0041a78c473e8be7a2cb69f",
+    "indices.npy_sha256": "3141a17f9c1891914545c88f0b582242f2d0582db31bf403411323b321101dac",
+    "indptr.npy_sha256": "d45b2773bf148c2797f877f104c493b85fce4bec5e4bd8ae42b06dfc1cc2ee50",
+    "total_preparation_seconds": 1147.3488103680002
+  },
+  "measurement_runs": [
+    {
+      "id": "initial",
+      "results_file": "brain-datafusion-initial-results.json",
+      "sizes": [
+        5000,
+        100000,
+        250000
+      ],
+      "record_provenance": {
+        "trials": "Transcribed from captured supervisor stdout.",
+        "metadata": "Same runner, package and dataset as the preceding Windows-scratch attempt; initial MemAvailable is from the successful run's captured metadata.",
+        "run_output_directory": "/tmp/dbnumpy-brain-datafusion-linux-20260916",
+        "temporary_run_files_retained": false,
+        "reason": "The WSL /tmp run directory disappeared before it could be copied after supervisor exit."
+      }
+    },
+    {
+      "id": "completion",
+      "results_file": "brain-datafusion-missing-results.json",
+      "sizes": [
+        10000,
+        25000,
+        50000
+      ],
+      "record_provenance": {
+        "trials": "Copied from original supervisor results.json",
+        "validation_files_retained": true,
+        "scratch_filesystem": "WSL Linux ext4"
+      }
+    }
+  ],
+  "trials": [
+    {
+      "engine": "datafusion",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 7.510444641113281,
+      "engine_budget_bytes": 4032139264,
+      "memory_max_bytes": 8064278528,
+      "peak_bytes": 608878592,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.1997792350000509,
+      "workflow_seconds": 4.097770099999934,
+      "native_compute_seconds": 0.7632789609999691,
+      "total_seconds": 5.060828295999954,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "native_compute_completed": true,
+      "native_storage": "parquet",
+      "output_nnz": 10009945,
+      "native_validation_seconds": 0.49324523299992507,
+      "verification": {
+        "scope": "native_summaries_count_and_sample",
+        "max_gene_mean_abs_error": 1.4210854715202004e-14,
+        "max_gene_variance_abs_error": 1.4011014570769476e-13,
+        "native_max_gene_mean_abs_error": 2.220446049250313e-14,
+        "native_max_gene_variance_abs_error": 1.812439087700568e-13,
+        "sample_rows": 64,
+        "sample_values": 131994,
+        "sample_max_abs_error": 8.881784197001252e-16
+      },
+      "run_id": "initial"
+    },
+    {
+      "engine": "datafusion",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 7.510448455810547,
+      "engine_budget_bytes": 4032141312,
+      "memory_max_bytes": 8064282624,
+      "peak_bytes": 801574912,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.33341214100000016,
+      "workflow_seconds": 4.533179970999999,
+      "native_compute_seconds": 0.9986048939999996,
+      "total_seconds": 5.865197005999999,
+      "retained_cells": 9902,
+      "retained_genes": 16997,
+      "native_compute_completed": true,
+      "native_storage": "parquet",
+      "output_nnz": 20025410,
+      "native_validation_seconds": 0.9544240290000019,
+      "verification": {
+        "scope": "native_summaries_count_and_sample",
+        "max_gene_mean_abs_error": 1.2434497875801753e-14,
+        "max_gene_variance_abs_error": 1.4499512701604544e-13,
+        "native_max_gene_mean_abs_error": 3.4638958368304884e-14,
+        "native_max_gene_variance_abs_error": 3.2968072716244023e-13,
+        "sample_rows": 64,
+        "sample_values": 128810,
+        "sample_max_abs_error": 8.881784197001252e-16
+      },
+      "run_id": "completion"
+    },
+    {
+      "engine": "datafusion",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 7.510448455810547,
+      "engine_budget_bytes": 4032141312,
+      "memory_max_bytes": 8064282624,
+      "peak_bytes": 1067106304,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.26854106100000763,
+      "workflow_seconds": 9.996042629999991,
+      "native_compute_seconds": 3.0013227769999986,
+      "total_seconds": 13.265906467999997,
+      "retained_cells": 24721,
+      "retained_genes": 18175,
+      "native_compute_completed": true,
+      "native_storage": "parquet",
+      "output_nnz": 50112911,
+      "native_validation_seconds": 3.3409422269999993,
+      "verification": {
+        "scope": "native_summaries_count_and_sample",
+        "max_gene_mean_abs_error": 2.0872192862952943e-14,
+        "max_gene_variance_abs_error": 1.3050671654468715e-13,
+        "native_max_gene_mean_abs_error": 4.529709940470639e-14,
+        "native_max_gene_variance_abs_error": 5.619948950652542e-13,
+        "sample_rows": 64,
+        "sample_values": 132879,
+        "sample_max_abs_error": 8.881784197001252e-16
+      },
+      "run_id": "completion"
+    },
+    {
+      "engine": "datafusion",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 7.510448455810547,
+      "engine_budget_bytes": 4032141312,
+      "memory_max_bytes": 8064282624,
+      "peak_bytes": 1396944896,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.37967130199999133,
+      "workflow_seconds": 16.44372562000001,
+      "native_compute_seconds": 4.622525061000005,
+      "total_seconds": 21.445921983000005,
+      "retained_cells": 49461,
+      "retained_genes": 19057,
+      "native_compute_completed": true,
+      "native_storage": "parquet",
+      "output_nnz": 100374858,
+      "native_validation_seconds": 4.763830898000009,
+      "verification": {
+        "scope": "native_summaries_count_and_sample",
+        "max_gene_mean_abs_error": 2.398081733190338e-14,
+        "max_gene_variance_abs_error": 2.2004620348070603e-13,
+        "native_max_gene_mean_abs_error": 7.149836278586008e-14,
+        "native_max_gene_variance_abs_error": 5.569433803032098e-13,
+        "sample_rows": 64,
+        "sample_values": 126720,
+        "sample_max_abs_error": 8.881784197001252e-16
+      },
+      "run_id": "completion"
+    },
+    {
+      "engine": "datafusion",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 7.510444641113281,
+      "engine_budget_bytes": 4032139264,
+      "memory_max_bytes": 8064278528,
+      "peak_bytes": 1947668480,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet",
+        "counts-50000-100000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.2597428990000026,
+      "workflow_seconds": 28.885742937999908,
+      "native_compute_seconds": 9.171839698999975,
+      "total_seconds": 38.317325535999885,
+      "retained_cells": 98939,
+      "retained_genes": 19994,
+      "native_compute_completed": true,
+      "native_storage": "parquet",
+      "output_nnz": 200549531,
+      "native_validation_seconds": 8.99390698100001,
+      "verification": {
+        "scope": "native_summaries_count_and_sample",
+        "max_gene_mean_abs_error": 3.2862601528904634e-14,
+        "max_gene_variance_abs_error": 2.369215934550084e-13,
+        "native_max_gene_mean_abs_error": 9.103828801926284e-14,
+        "native_max_gene_variance_abs_error": 7.256972800462336e-13,
+        "sample_rows": 64,
+        "sample_values": 114844,
+        "sample_max_abs_error": 8.881784197001252e-16
+      },
+      "run_id": "initial"
+    },
+    {
+      "engine": "datafusion",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 7.510444641113281,
+      "engine_budget_bytes": 4032139264,
+      "memory_max_bytes": 8064278528,
+      "peak_bytes": 3178319872,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet",
+        "counts-50000-100000.parquet",
+        "counts-100000-250000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.36661696800001664,
+      "workflow_seconds": 82.06015136399992,
+      "native_compute_seconds": 25.54044500800012,
+      "total_seconds": 107.96721334000006,
+      "retained_cells": 247378,
+      "retained_genes": 21112,
+      "native_compute_completed": true,
+      "native_storage": "parquet",
+      "output_nnz": 501721634,
+      "native_validation_seconds": 21.838556800999868,
+      "verification": {
+        "scope": "native_summaries_count_and_sample",
+        "max_gene_mean_abs_error": 9.414691248821327e-14,
+        "max_gene_variance_abs_error": 6.674660824046441e-13,
+        "native_max_gene_mean_abs_error": 2.1582735598713043e-13,
+        "native_max_gene_variance_abs_error": 1.6433521210501567e-12,
+        "sample_rows": 64,
+        "sample_values": 133987,
+        "sample_max_abs_error": 8.881784197001252e-16
+      },
+      "run_id": "initial"
+    }
+  ]
+}

@@ -1,0 +1,1294 @@
+{
+  "method": "cgroup v2; memory.max=ceiling, memory.swap.max=0; serial workers",
+  "scope": "disk-backed input; shared workflow; full output required for pass",
+  "input_cache_policy": "POSIX_FADV_DONTNEED requested on each worker's input files; Windows host cache is not controlled",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+  "python": "3.14.7",
+  "cpu": "Intel(R) Core(TM) Ultra 5 125U",
+  "versions": {
+    "numpy": "2.5.3",
+    "scipy": "1.18.1",
+    "duckdb": "1.5.5",
+    "datafusion": "54.0.0",
+    "pyarrow": "25.0.1",
+    "h5py": "3.16.0",
+    "scanpy": "1.12.4"
+  },
+  "limits_gib": [
+    1.0,
+    2.0
+  ],
+  "sizes": [
+    5000,
+    10000,
+    25000,
+    50000,
+    100000,
+    250000
+  ],
+  "repeats": 1,
+  "timeout_seconds": 600,
+  "disk_free_floor_bytes": 5368709120,
+  "engine_budget_fraction": 0.5,
+  "workflow_sha256": "c0b76e0fc6ddcc4b8d18d100f0135ab02920c69b23896c5a3e034f37e877ee11",
+  "runner_sha256": "1c08dd1b811653a9cf4ac1bdfb190bac7337af1d1af547571393a0bb25807c20",
+  "package_source_sha256": {
+    "src/dbnumpy/__init__.py": "4c71c62663020380e5f3c6a39f3469906d7a81bbd938ddfb08fdb71e643a984e",
+    "src/dbnumpy/_version.py": "79cd578df70807225661058c7ec4767de761437dad1a726975581c29534a1a14",
+    "src/dbnumpy/backends/__init__.py": "310fa592b371058a11b7faa155f807619dcad42a5737da6d8ff72498b1621fb3",
+    "src/dbnumpy/backends/base.py": "796b230be46e1818b102753993f822d5260a8c4bde515c71249d87b20731cb4c",
+    "src/dbnumpy/backends/capabilities.py": "cbbf29fbb4c5e6c34ff0bb035bf80dc2da51d1a8fed1d8a4bf6bb96318430dbb",
+    "src/dbnumpy/backends/datafusion.py": "92e88efde05a67c368028bfa1e7076d72b437d4a62134bf7a2ce519cbd3a4d2e",
+    "src/dbnumpy/backends/duckdb.py": "3a8106ecc169ba19ff4b528f1f5bd4d7906c4187c1b1a334cd6138bdb25a5c3b",
+    "src/dbnumpy/exceptions.py": "8c556a0b6ccf16fe235c6b4f2a1e7f181a00279d9156b6619e5d27d5235a1b60",
+    "src/dbnumpy/indexing.py": "3a169108c4f4be142ff597fbd9503c83bed3f6a04d6792d3f4f2c777bbf64163",
+    "src/dbnumpy/io.py": "6bfccf3432c5fd8543cc0cb13afdf724e5fad1e03f345485d91810776576ac88",
+    "src/dbnumpy/ir.py": "55c0adaf47288f59f8169e5d2ed243a8b32c1403220f43ab53582e5edf6d2972",
+    "src/dbnumpy/lowering/__init__.py": "7d38e408237060b900291aa73a8b48da642377871935cbcf7a6dd80e12eb83e6",
+    "src/dbnumpy/lowering/datafusion_native.py": "8efb7584b35261517c73ad62d93a05a0ef8c15e8dd49b17df4c958ae56616eb0",
+    "src/dbnumpy/lowering/ibis.py": "2d27d66c8f2ffa546bb415799b090e7495e081f9aa4f653008f76a7b617f5966",
+    "src/dbnumpy/lowering/pointwise.py": "4118982cec32721e8d392136b3120e9f72242c70fb7eb7a44ae19f4dff80d17a",
+    "src/dbnumpy/lowering/pointwise_sql.py": "7ff6e238497a6743d482134fa916870fe4a96bb0f85551d5e943ea3e878aa3d3",
+    "src/dbnumpy/matrix.py": "5e7c83abb49f11506c97e8e396d80265fe9bb4109e8097ed7b83b37b6397d5bc"
+  },
+  "reference_sha256": {
+    "5000": "c977499e1f86cdcc5c0b86947657eec1b97a3e13325022c9ea422316be4b6c2f",
+    "10000": "67783fd8dbec2e0502d45cf6edda554c11873a8d5d8fbe660c289e13a54aa5fc",
+    "25000": "a745afdab7dcc445498d049c7b281337e9d24d8d81ec5ba943ea2a2bf6bb201e",
+    "50000": "e373dbba9ae9d5623918a4d8eaf28ea72ffa83ab6ff65fd1b9d30e6f17f99767",
+    "100000": "bed74538b0dac20dc43894ee3f6599ed823f6607ceeb921a131215ec2d6b7c0a",
+    "250000": "24d161afa77692e77be73431e71410cd02f163cf0eeb9b01c0dc241647c7d2e5"
+  },
+  "dataset": {
+    "source_url": "https://www.10xgenomics.com/datasets/1-3-million-brain-cells-from-e-18-mice-2-standard-1-3-0",
+    "source_cells": 1306127,
+    "genes": 27998,
+    "source_nnz": 2624828308,
+    "seed": 20260916,
+    "sizes": [
+      5000,
+      10000,
+      25000,
+      50000,
+      100000,
+      250000
+    ],
+    "selected_cells": 250000,
+    "selected_nnz": 502051514,
+    "selected_indices_sha256": "514c4eec0bbec1679e3135f6f46d38d9481e4ddcf31abfaa788f45c10a2b2136",
+    "archive_sha256": "255a36ee92de25cb3568faa2c27d31fe6d0db30f285c5c977be8d6245de14044",
+    "csr_preparation_seconds": 442.14862471500004,
+    "partitions": [
+      {
+        "begin": 0,
+        "end": 5000,
+        "file": "counts-0-5000.parquet",
+        "nnz": 10020262,
+        "bytes": 22018002,
+        "sha256": "198aa103dc7b59bb9bf2a8cfa5af57ccd3f0be2170d35dc5343332ba408b0400"
+      },
+      {
+        "begin": 5000,
+        "end": 10000,
+        "file": "counts-5000-10000.parquet",
+        "nnz": 10020658,
+        "bytes": 22015221,
+        "sha256": "535e84f6cb38c19c98b95932235c589fd918f6cdd0dbc698fe4ce80779c1343b"
+      },
+      {
+        "begin": 10000,
+        "end": 25000,
+        "file": "counts-10000-25000.parquet",
+        "nnz": 30110701,
+        "bytes": 66165499,
+        "sha256": "91f9ddf15b3ce3d7fd495500b6683765e8bb161c899b23bb318724c940b8a087"
+      },
+      {
+        "begin": 25000,
+        "end": 50000,
+        "file": "counts-25000-50000.parquet",
+        "nnz": 50294507,
+        "bytes": 110561941,
+        "sha256": "b86fcb953d491ec45d13f4091172b9b5d9a7dbdb5393694f1726c01532d6960f"
+      },
+      {
+        "begin": 50000,
+        "end": 100000,
+        "file": "counts-50000-100000.parquet",
+        "nnz": 100239631,
+        "bytes": 220331574,
+        "sha256": "4cef896a9543e6bbcf52267e43a99220a716c9b9c4910ed514fa84ff7fb13be9"
+      },
+      {
+        "begin": 100000,
+        "end": 250000,
+        "file": "counts-100000-250000.parquet",
+        "nnz": 301365755,
+        "bytes": 662203384,
+        "sha256": "3f985618ca7d4ec6b9815f03ce0be75b8a7626c477ce6f641b921ee8a94f5a3a"
+      }
+    ],
+    "csr_canonicalization_seconds": 310.69618858900003,
+    "parquet_preparation_seconds": 136.02104242199994,
+    "duckdb_preparation_seconds": 198.45532428299998,
+    "duckdb_bytes": 1608790016,
+    "data.npy_sha256": "f81e6915550aa664f0ac6e6ed8cc3c56a18802d3a0041a78c473e8be7a2cb69f",
+    "indices.npy_sha256": "3141a17f9c1891914545c88f0b582242f2d0582db31bf403411323b321101dac",
+    "indptr.npy_sha256": "d45b2773bf148c2797f877f104c493b85fce4bec5e4bd8ae42b06dfc1cc2ee50",
+    "total_preparation_seconds": 1147.3488103680002
+  },
+  "trials": [
+    {
+      "engine": "scipy",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1048612864,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 1.2639717689999657,
+      "workflow_seconds": 2.569602511000028,
+      "collect_seconds": 0.06857361200002288,
+      "total_seconds": 3.9021478920000163,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "output_nnz": 10009945,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.687538997430238e-14,
+        "max_gene_variance_abs_error": 1.279532035880493e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "duckdb",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 753885184,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.625236884000003,
+      "workflow_seconds": 4.424599241999999,
+      "collect_seconds": 1.2626394019999907,
+      "total_seconds": 9.312475527999993,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "output_nnz": 10009945,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.4210854715202004e-14,
+        "max_gene_variance_abs_error": 1.4011014570769476e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "datafusion",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 929071104,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.4111839949999876,
+      "workflow_seconds": 5.457534996999925,
+      "collect_seconds": 1.2170422279999684,
+      "total_seconds": 7.085761219999881,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "output_nnz": 10009945,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.4210854715202004e-14,
+        "max_gene_variance_abs_error": 1.4011014570769476e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "scipy",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 39,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "workflow",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 85,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.5314536140000428,
+      "workflow_seconds": 6.931350707999968,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.6645352591003757e-14,
+        "max_gene_variance_abs_error": 2.2470914018413168e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 1655,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.3091776139999638,
+      "workflow_seconds": 6.131916607999983,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 1.2434497875801753e-14,
+        "max_gene_variance_abs_error": 1.4499512701604544e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 76,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "workflow",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 65639,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.5597020069999417,
+      "workflow_seconds": 13.180049145999988,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 4.796163466380676e-14,
+        "max_gene_variance_abs_error": 5.550004900101158e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 12591,
+        "oom": 2,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.2560482430000093,
+      "workflow_seconds": 12.29553350699996,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.0872192862952943e-14,
+        "max_gene_variance_abs_error": 1.3050671654468715e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 1419,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "input_open",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 90363,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.6884823560000086,
+      "workflow_seconds": 25.064691480999954,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 4.39648317751562e-14,
+        "max_gene_variance_abs_error": 4.017342014606129e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 16831,
+        "oom": 2,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.2732110050000074,
+      "workflow_seconds": 19.898948320000045,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.398081733190338e-14,
+        "max_gene_variance_abs_error": 2.2004620348070603e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073745920,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 1740,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "input_open",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 103043,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 4.106611613000041,
+      "workflow_seconds": 65.54956513800005,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 1.0169642905566434e-13,
+        "max_gene_variance_abs_error": 6.15563156003418e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1074003968,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 23997,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet",
+        "counts-50000-100000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.4857316720001563,
+      "workflow_seconds": 40.302919556000006,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 3.2862601528904634e-14,
+        "max_gene_variance_abs_error": 2.369215934550084e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 1793,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "input_open",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 47689,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.707879561000027,
+      "workflow_seconds": 169.54109609400007,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.2648549702353193e-13,
+        "max_gene_variance_abs_error": 1.4777068457760834e-12
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 1.0,
+      "engine_budget_bytes": 536870912,
+      "peak_bytes": 1073741824,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 16695,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet",
+        "counts-50000-100000.parquet",
+        "counts-100000-250000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.49696944599986637,
+      "workflow_seconds": 109.96515169600002,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 9.414691248821327e-14,
+        "max_gene_variance_abs_error": 6.674660824046441e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 1046331392,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 1.2942185480001172,
+      "workflow_seconds": 2.6027365850000024,
+      "collect_seconds": 0.07060637699987637,
+      "total_seconds": 3.967561509999996,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "output_nnz": 10009945,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.687538997430238e-14,
+        "max_gene_variance_abs_error": 1.279532035880493e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "duckdb",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 754327552,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.547472642999992,
+      "workflow_seconds": 4.401434914999982,
+      "collect_seconds": 1.537969602999965,
+      "total_seconds": 9.486877160999938,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "output_nnz": 10009945,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.4210854715202004e-14,
+        "max_gene_variance_abs_error": 1.4011014570769476e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "datafusion",
+      "cells": 5000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 911015936,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.39906334299985247,
+      "workflow_seconds": 5.1281197460000385,
+      "collect_seconds": 1.3652645590000247,
+      "total_seconds": 6.892447647999916,
+      "retained_cells": 4942,
+      "retained_genes": 16052,
+      "output_nnz": 10009945,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.4210854715202004e-14,
+        "max_gene_variance_abs_error": 1.4011014570769476e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "scipy",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2011934720,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 2.33487988700017,
+      "workflow_seconds": 5.972373527999935,
+      "collect_seconds": 0.19466960099998687,
+      "total_seconds": 8.501923016000092,
+      "retained_cells": 9902,
+      "retained_genes": 16997,
+      "output_nnz": 20025410,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 3.552713678800501e-14,
+        "max_gene_variance_abs_error": 3.22519788653608e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "duckdb",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 1272401920,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.662584279999919,
+      "workflow_seconds": 6.886100250000027,
+      "collect_seconds": 3.074302656999862,
+      "total_seconds": 13.622987186999808,
+      "retained_cells": 9902,
+      "retained_genes": 16997,
+      "output_nnz": 20025410,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 2.6645352591003757e-14,
+        "max_gene_variance_abs_error": 2.2470914018413168e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "datafusion",
+      "cells": 10000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 1623449600,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0
+      },
+      "returncode": 0,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet"
+      ],
+      "last_phase": "finished",
+      "status": "passed",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.2758168279999609,
+      "workflow_seconds": 5.475949254999932,
+      "collect_seconds": 2.3522343470001488,
+      "total_seconds": 8.104000430000042,
+      "retained_cells": 9902,
+      "retained_genes": 16997,
+      "output_nnz": 20025410,
+      "verification": {
+        "scope": "full_output_and_summaries",
+        "max_gene_mean_abs_error": 1.2434497875801753e-14,
+        "max_gene_variance_abs_error": 1.4499512701604544e-13,
+        "max_abs_error": 1.7763568394002505e-15
+      }
+    },
+    {
+      "engine": "scipy",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 93,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "workflow",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 68,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.5606910750000225,
+      "workflow_seconds": 13.45871318799982,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 4.796163466380676e-14,
+        "max_gene_variance_abs_error": 5.550004900101158e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 25000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 5120,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.4541716839999026,
+      "workflow_seconds": 12.46125768700017,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.0872192862952943e-14,
+        "max_gene_variance_abs_error": 1.3050671654468715e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 93,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "workflow",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147487744,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 55060,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 3.843539729999975,
+      "workflow_seconds": 24.04315960300005,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 4.39648317751562e-14,
+        "max_gene_variance_abs_error": 4.017342014606129e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 50000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 13464,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.4418249499999547,
+      "workflow_seconds": 20.38264326699982,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.398081733190338e-14,
+        "max_gene_variance_abs_error": 2.2004620348070603e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 3451,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "input_open",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147487744,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 79818,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 4.374599319000026,
+      "workflow_seconds": 51.74840730400001,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 1.0169642905566434e-13,
+        "max_gene_variance_abs_error": 6.15563156003418e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 100000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 28896,
+        "oom": 3,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet",
+        "counts-50000-100000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.43819333400006144,
+      "workflow_seconds": 39.443061641999975,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 3.2862601528904634e-14,
+        "max_gene_variance_abs_error": 2.369215934550084e-13
+      },
+      "error": ""
+    },
+    {
+      "engine": "scipy",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 4161,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "data.npy",
+        "indices.npy",
+        "indptr.npy"
+      ],
+      "last_phase": "input_open",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "error": ""
+    },
+    {
+      "engine": "duckdb",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 52898,
+        "oom": 1,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts.duckdb"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 4.200954720000027,
+      "workflow_seconds": 165.07892348099995,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 2.2648549702353193e-13,
+        "max_gene_variance_abs_error": 1.4777068457760834e-12
+      },
+      "error": ""
+    },
+    {
+      "engine": "datafusion",
+      "cells": 250000,
+      "repeat": 0,
+      "limit_gib": 2.0,
+      "engine_budget_bytes": 1073741824,
+      "peak_bytes": 2147483648,
+      "memory_events": {
+        "low": 0,
+        "high": 0,
+        "max": 19724,
+        "oom": 2,
+        "oom_kill": 2,
+        "oom_group_kill": 1
+      },
+      "returncode": -9,
+      "input_files_eviction_requested": [
+        "counts-0-5000.parquet",
+        "counts-5000-10000.parquet",
+        "counts-10000-25000.parquet",
+        "counts-25000-50000.parquet",
+        "counts-50000-100000.parquet",
+        "counts-100000-250000.parquet"
+      ],
+      "last_phase": "sparse_collection",
+      "status": "memory_limit",
+      "spill_bytes_after_exit": 0,
+      "input_open_seconds": 0.4633597369997915,
+      "workflow_seconds": 108.37476862800031,
+      "verification": {
+        "scope": "summaries_only",
+        "max_gene_mean_abs_error": 9.414691248821327e-14,
+        "max_gene_variance_abs_error": 6.674660824046441e-13
+      },
+      "error": ""
+    }
+  ]
+}

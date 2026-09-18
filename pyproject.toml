@@ -1,0 +1,110 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dbnumpy"
+version = "0.4.0a0"
+description = "NumPy-style matrix operations in DuckDB and DataFusion"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+authors = [
+  { name = "DBVerse contributors" },
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Database :: Database Engines/Servers",
+  "Topic :: Scientific/Engineering",
+  "Typing :: Typed",
+]
+dependencies = [
+  "ibis-framework>=12,<13",
+  "numpy>=2,<3",
+  "packaging>=21.3,<27",
+  "pyarrow>=22,<26",
+  "sqlglot>=30.11,<31",
+]
+
+[project.urls]
+Homepage = "https://github.com/Ed2uiz/dbnumpy"
+Documentation = "https://github.com/Ed2uiz/dbnumpy/tree/main/docs"
+Repository = "https://github.com/Ed2uiz/dbnumpy"
+Issues = "https://github.com/Ed2uiz/dbnumpy/issues"
+
+[project.optional-dependencies]
+duckdb = [
+  "duckdb>=1.4,<2",
+]
+datafusion = [
+  "datafusion>=54,<55",
+]
+scipy = [
+  "scipy>=1.15,<2",
+]
+docs = [
+  "mkdocs-material>=9.7,<10",
+  "mkdocstrings[python]>=1,<2",
+]
+dev = [
+  "build>=1.2,<2",
+  "datafusion>=54,<55",
+  "duckdb>=1.4,<2",
+  "mypy>=1.15,<3",
+  "pytest>=8.3,<10",
+  "pytest-cov>=6,<8",
+  "ruff>=0.11,<1",
+  "scipy>=1.15,<2",
+  "sqlalchemy>=2.0.51,<2.1",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dbnumpy"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/CHANGELOG.md",
+  "/CONTRIBUTING.md",
+  "/LICENSE",
+  "/README.md",
+  "/benchmarks",
+  "/constraints",
+  "/docs",
+  "/examples",
+  "/mkdocs.yml",
+  "/pyproject.toml",
+  "/scripts",
+  "/src",
+  "/tests",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "backend: exercises a real analytical backend",
+  "parity: compares database-backed results with NumPy or SciPy",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "N", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["dbnumpy"]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+module = ["ibis", "ibis.*", "pyarrow", "pyarrow.*", "scipy", "scipy.*"]
+ignore_missing_imports = true

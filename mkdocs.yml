@@ -1,0 +1,91 @@
+site_name: dbnumpy
+site_description: NumPy-style matrix operations in DuckDB and DataFusion
+site_dir: site
+strict: true
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: Use dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Use light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_section_style: list
+            heading_level: 2
+            members_order: source
+            merge_init_into_class: true
+            separate_signature: true
+            show_root_heading: true
+            show_signature_annotations: true
+            show_source: true
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: .
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+nav:
+  - Home: index.md
+  - Get started: getting-started.md
+  - Guides:
+      - Overview: guides/overview.md
+      - File input: guides/out-of-core-mtx.md
+      - Arithmetic: guides/arithmetic.md
+      - Operations: guides/operations.md
+      - Indexing: guides/indexing.md
+      - R comparison: guides/r-parity.md
+      - PBMC preprocessing: guides/pbmc-benchmark.md
+      - Memory-limit pilot: guides/pbmc-memory-pressure.md
+      - Disk-backed preprocessing: guides/brain-benchmark.md
+      - Full-RAM follow-up: guides/brain-max-ram.md
+      - Computing the full matrix: guides/brain-native-compute.md
+  - Design:
+      - API and limits: api.md
+      - How dbnumpy works: architecture.md
+  - Reference:
+      - Python API: reference/python-api.md
+      - R behavior: reference/dbmatrix-r-behavior.md

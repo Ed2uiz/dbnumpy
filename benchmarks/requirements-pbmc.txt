@@ -1,0 +1,13 @@
+# Optional dependencies for the measured PBMC example; not runtime requirements.
+numpy==2.5.3
+scipy==1.18.1
+duckdb==1.5.5
+datafusion==54.0.0
+ibis-framework==12.0.0
+pyarrow==25.0.1
+sqlglot==30.18.0
+pandas==3.0.5
+matplotlib==3.11.2
+psutil==7.2.2
+scanpy==1.12.4
+h5py==3.16.0

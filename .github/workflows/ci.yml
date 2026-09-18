@@ -1,0 +1,83 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark-fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install benchmark validation dependencies
+        run: >-
+          python -m pip install --only-binary=:all:
+          -e '.[dev]' -r benchmarks/requirements-pbmc.txt
+      - name: Check the shared workflow and independent reference on a small fixture
+        run: pytest tests/test_brain_benchmark.py tests/test_pbmc_workflow.py
+
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.14"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install binary dependencies and editable package
+        run: >-
+          python -m pip install --only-binary=:all: -e '.[dev]'
+      - name: Backend and parity tests
+        run: pytest --cov=dbnumpy --cov-report=term --cov-fail-under=80
+
+  quality-and-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+      - name: Install quality, backend, and documentation dependencies
+        run: >-
+          python -m pip install --only-binary=:all: -e '.[dev,docs]'
+      - name: Lint
+        run: ruff check src tests benchmarks examples scripts
+      - name: Type check
+        run: mypy src/dbnumpy
+      - name: Bounded query and reproducibility checks
+        run: python scripts/query_checks.py
+      - name: Runnable vignettes
+        run: |
+          for vignette in examples/vignettes/*.py; do
+            python "$vignette"
+          done
+      - name: Strict documentation build
+        run: mkdocs build --strict
+      - name: Build distributions
+        run: python -m build
+      - name: Smoke-test source distribution documentation
+        run: >-
+          python scripts/sdist_content_smoke.py
+          dist/dbnumpy-0.4.0a0.tar.gz
+      - name: Smoke-test built artifacts in a clean environment
+        run: |
+          python -m venv .wheel-smoke
+          .wheel-smoke/bin/python -m pip install --only-binary=:all: 'dist/dbnumpy-0.4.0a0-py3-none-any.whl[duckdb,datafusion,scipy]'
+          .wheel-smoke/bin/python -m pip check
+          .wheel-smoke/bin/python scripts/artifact_smoke.py
+          .wheel-smoke/bin/python -m pip install --no-deps --force-reinstall dist/dbnumpy-0.4.0a0.tar.gz
+          .wheel-smoke/bin/python -m pip check
+          .wheel-smoke/bin/python scripts/artifact_smoke.py
