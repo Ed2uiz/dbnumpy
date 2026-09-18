@@ -139,12 +139,40 @@ zeros, signs, nonfinite values or accuracy across both engines.
 | `compute()` | Store results in the engine; preserve wrapper rank |
 | `to_numpy()`, `np.asarray()` | Execute and collect a dense host array |
 | `to_scipy()` | Execute and collect a sparse host array |
+| `show(edgeitems=5)` | Print the first and last five rows and columns of a matrix |
 | `DBScalar.item()` | Execute and collect one value |
 | Reductions | Execute and collect a scalar or NumPy array |
 
 `plan()` refers to live source and selector relations. It is not a portable
 replay file. Unsupported NumPy functions fail through dispatch. `np.asarray()`
 is an explicitly supported eager conversion.
+
+`x.show()` runs a coordinate-filtered database query and collects at most 100
+values. It displays sparse zeros and inserts ellipses for omitted rows or
+columns. `x.show(edgeitems=3)` uses three entries at each edge. Small matrices
+are shown in full. The original array stays lazy; `repr(x)` and `print(x)`
+continue to show metadata without querying values.
+
+Preview filters can be pushed into database scans, but limited output does not
+guarantee limited database work. For example, previewing a matrix product may
+still require reading many input values. Existing execution and collection
+limits apply. `show()` currently supports two-dimensional arrays.
+
+To preview the coordinate rows instead of the matrix layout:
+
+```python
+query = f"SELECT i, j, x FROM ({x.compile()}) AS preview ORDER BY i, j LIMIT 10"
+
+# DuckDB
+x.backend.connection.sql(query).show()
+
+# DataFusion
+x.backend.context.sql(query).show()
+```
+
+Use the line for your backend. `i` and `j` are zero-based row and column
+indices; `x` is the value. This executes the expression, and sorting can read
+more than ten entries. Sparse zeros may be absent from the coordinate rows.
 
 `compute()` returns an array backed by a completed result. DuckDB uses temporary
 tables; DataFusion uses engine-written temporary Parquet files. Both support

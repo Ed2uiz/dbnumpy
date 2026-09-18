@@ -148,6 +148,33 @@ class DBArray[ScalarT: np.generic]:
 
         return self.to_numpy()
 
+    def show(self, *, edgeitems: int = 5) -> None:
+        """Print the first and last entries along each axis.
+
+        Runs a coordinate-filtered query and collects at most ``(2*edgeitems)**2``
+        values. The array stays lazy. Database work may exceed the preview size
+        for expressions whose requested values depend on larger inputs.
+        """
+        values = self.backend._collect_preview(self._expr, edgeitems=edgeitems)
+        if not values.size:
+            print(repr(self))
+            print("[]")
+            return
+        edgeitems = index(edgeitems)
+        # Insert a hidden middle row/column where NumPy should print an ellipsis.
+        # Never allocate a display buffer with the original matrix dimensions.
+        shape = tuple(min(size, 2 * edgeitems + 1) for size in self.shape)
+        display = np.zeros(shape, dtype=np.float64)
+        positions = [
+            np.concatenate((np.arange(edgeitems), np.arange(edgeitems + 1, size)))
+            if size > 2 * edgeitems
+            else np.arange(size)
+            for size in shape
+        ]
+        display[np.ix_(*positions)] = values
+        print(repr(self))
+        print(np.array2string(display, edgeitems=edgeitems, threshold=0))
+
     def to_scipy(self, *, format: str = "csr") -> Any:
         """Execute and collect as a SciPy sparse array."""
 

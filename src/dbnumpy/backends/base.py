@@ -327,6 +327,56 @@ class Backend(ABC):
             output[i, j] = x
         return output
 
+    def _collect_preview(
+        self, expr: MatrixExpr, *, edgeitems: int
+    ) -> np.ndarray[Any, np.dtype[np.float64]]:
+        """Collect only edge coordinates, without materializing the full matrix."""
+        self._check_open()
+        if isinstance(edgeitems, (bool, np.bool_)):
+            raise TypeError("edgeitems must be a positive integer, not a boolean")
+        edgeitems = index(edgeitems)
+        if edgeitems < 1:
+            raise ValueError("edgeitems must be positive")
+        shape = tuple(min(size, 2 * edgeitems) for size in expr.shape)
+        cells = shape[0] * shape[1]
+        self.guard_shape_expansion(cells, operation="show()")
+        if cells > self.max_host_values:
+            raise DensificationError(
+                f"show() would collect {cells:,} values, above "
+                f"max_host_values={self.max_host_values:,}"
+            )
+        result = np.zeros(shape, dtype=np.float64)
+        if not cells:
+            return result
+
+        predicates = []
+        for axis, size in zip(("i", "j"), expr.shape, strict=True):
+            bounds = f'"{axis}" >= 0 AND "{axis}" < {size}'
+            if size > 2 * edgeitems:
+                bounds += (
+                    f' AND ("{axis}" < {edgeitems} OR "{axis}" >= {size - edgeitems})'
+                )
+            predicates.append(f"({bounds})")
+        sql = self.compile(expr)
+        # Filter coordinates in the database. A bare LIMIT would show arbitrary
+        # stored entries and would miss sparse zeros and the matrix's last rows.
+        table = self._execute_sql(
+            f'SELECT "i", "j", "x" FROM ({sql}) AS "__dbnumpy_preview" '
+            f"WHERE {' AND '.join(predicates)} LIMIT {cells + 1}"
+        )
+        if table.num_rows > cells:
+            raise ValueError("preview requires unique matrix coordinates")
+        positions = []
+        for axis, size, length in zip(("i", "j"), expr.shape, shape, strict=True):
+            values = _copy_arrow_column(table.column(axis), np.int64)
+            if size > length:
+                values = np.where(values < edgeitems, values, values - (size - length))
+            positions.append(values)
+        result[positions[0], positions[1]] = _copy_arrow_column(
+            table.column("x"), np.float64
+        )
+        return result
+
     def collect_coordinates(
         self, expr: MatrixExpr
     ) -> tuple[
