@@ -408,7 +408,7 @@ class DBVector(_LazyRankedResult):
                     raise BackendMismatchError(
                         "vector operands belong to different backend instances"
                     )
-                if self.shape != other.shape:
+                if self.shape != other.shape and 1 not in (self.size, other.size):
                     raise ValueError(
                         f"vector operands must have equal shapes; got {self.shape} and "
                         f"{other.shape}"
@@ -418,6 +418,9 @@ class DBVector(_LazyRankedResult):
                     other_expr = Transpose(other_expr)
                 left, right = (
                     (other_expr, self._expr) if reverse else (self._expr, other_expr)
+                )
+                left, right = self._as_matrix()._broadcast_pair(
+                    left, right, op=operation
                 )
                 expr: MatrixExpr = ElementwiseBinary(operation, left, right)
             elif isinstance(other, DBScalar):

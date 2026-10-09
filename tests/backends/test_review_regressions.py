@@ -278,6 +278,17 @@ def test_double_transpose_returns_original_plan(backend: Backend) -> None:
     np.testing.assert_array_equal((matrix.T.T.T + 1).to_numpy(), values.T + 1)
 
 
+def test_length_one_vector_broadcasts(backend: Backend) -> None:
+    values = np.arange(6.0).reshape(2, 3)
+    matrix = backend.from_numpy(values)
+    row, one, column = matrix[0, :], matrix[1, :1], matrix[:, 2]
+    np.testing.assert_array_equal((row + one).to_numpy(), values[0] + values[1, :1])
+    np.testing.assert_array_equal((one - row).to_numpy(), values[1, :1] - values[0])
+    np.testing.assert_array_equal((column * one).to_numpy(), values[:, 2] * 3.0)
+    with pytest.raises(ValueError, match="equal shapes"):
+        row + column
+
+
 def test_failed_gather_releases_selector_resources(backend: Backend) -> None:
     matrix = backend.from_numpy(np.ones((3, 4)))
     owned = backend._owned_relations.copy()
