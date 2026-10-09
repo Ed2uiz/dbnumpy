@@ -333,6 +333,10 @@ class Backend(ABC):
         if table.num_rows:
             i = _positions(table.column("i"), expr.shape[0])
             j = _positions(table.column("j"), expr.shape[1])
+            seen = np.zeros(expr.shape, dtype=np.bool_)
+            seen[i, j] = True
+            if np.count_nonzero(seen) != len(i):
+                raise ValueError("relation contains duplicate matrix coordinates")
             x = table.column("x").to_numpy(zero_copy_only=False).astype(np.float64)
             output[i, j] = x
         return output

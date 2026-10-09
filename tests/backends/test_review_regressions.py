@@ -263,6 +263,14 @@ def test_collection_rejects_out_of_bounds_relation_coordinates(
         matrix[:, 0].to_numpy()
 
 
+def test_to_numpy_rejects_duplicate_relation_coordinates(backend: Backend) -> None:
+    table = pa.table({"i": [0, 0], "j": [0, 0], "x": [1.0, 5.0]})
+    backend._register_arrow("duplicated", table)
+    matrix = backend.from_relation("duplicated", shape=(2, 2), storage="sparse")
+    with pytest.raises(ValueError, match="duplicate matrix coordinates"):
+        matrix.to_numpy()
+
+
 def test_failed_gather_releases_selector_resources(backend: Backend) -> None:
     matrix = backend.from_numpy(np.ones((3, 4)))
     owned = backend._owned_relations.copy()
