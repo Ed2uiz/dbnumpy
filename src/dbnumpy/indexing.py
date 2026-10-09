@@ -15,7 +15,6 @@ from dbnumpy.exceptions import (
 )
 from dbnumpy.ir import (
     BinaryOp,
-    Broadcast,
     ElementwiseBinary,
     Gather,
     MatrixExpr,
@@ -832,18 +831,6 @@ def _range_for_plan(selector: _Selector, size: int) -> _Range:
 
 def _is_identity_range(value: _Range, size: int) -> bool:
     return value == _Range(0, size, 1, size)
-
-
-def _broadcast_to(
-    backend: Backend, expr: MatrixExpr, target_shape: tuple[int, int]
-) -> MatrixExpr:
-    if expr.shape == target_shape:
-        return expr
-    backend.guard_shape_expansion(
-        target_shape[0] * target_shape[1], operation="lazy scalar broadcasting"
-    )
-    rows_relation, cols_relation = backend.dimension_relations(target_shape)
-    return Broadcast(expr, target_shape, rows_relation, cols_relation)
 
 
 def _validate_vector_axis(axis: int | None) -> None:
