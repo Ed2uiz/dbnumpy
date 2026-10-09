@@ -10,7 +10,8 @@ python -m pip install --only-binary=:all: -e '.[dev,docs]'
 
 ## Checks
 
-Run these before opening a pull request:
+Install the Git hooks once with `pre-commit install`; they run ruff on each
+commit. Run these before opening a pull request:
 
 ```bash
 ruff check src tests benchmarks examples scripts
