@@ -126,9 +126,9 @@ class DuckDBBackend(Backend):
                 "assume_canonical=True only supports general Matrix Market input"
             )
         relation = self._mtx_relation_name(name)
-        if relation in self._arrow_objects:
+        if relation in self._created_relations:
             raise ValueError(
-                f"cannot overwrite copied input or selector relation {relation!r}; "
+                f"cannot overwrite copied input or computed relation {relation!r}; "
                 "choose a new destination name"
             )
 

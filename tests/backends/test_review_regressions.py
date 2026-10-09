@@ -329,6 +329,16 @@ def test_mtx_integer_grammar_and_failed_overwrite(
         assert matrix.sum() == 3
 
 
+def test_mtx_overwrite_rejects_backend_created_relation(tmp_path: Path) -> None:
+    path = tmp_path / "input.mtx"
+    path.write_text("%%MatrixMarket matrix coordinate real general\n1 1 1\n1 1 3\n")
+    with DuckDBBackend.connect() as backend:
+        result = backend.from_numpy(np.ones((2, 2))).compute(name="result")
+        with pytest.raises(ValueError, match="cannot overwrite .* computed relation"):
+            backend.from_mtx(path, name="result", overwrite=True)
+        assert result.sum() == 4
+
+
 def test_sparse_export_canonicalizes_explicit_zero_arithmetic(backend: Backend) -> None:
     matrix = backend.from_coo([0], [0], [1.0], shape=(2, 2))
     infinite = backend.from_coo([0], [0], [np.inf], shape=(2, 2))
