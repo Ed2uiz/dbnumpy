@@ -271,6 +271,13 @@ def test_to_numpy_rejects_duplicate_relation_coordinates(backend: Backend) -> No
         matrix.to_numpy()
 
 
+def test_double_transpose_returns_original_plan(backend: Backend) -> None:
+    values = np.arange(6.0).reshape(2, 3)
+    matrix = backend.from_numpy(values)
+    assert matrix.T.T._expr is matrix._expr
+    np.testing.assert_array_equal((matrix.T.T.T + 1).to_numpy(), values.T + 1)
+
+
 def test_failed_gather_releases_selector_resources(backend: Backend) -> None:
     matrix = backend.from_numpy(np.ones((3, 4)))
     owned = backend._owned_relations.copy()

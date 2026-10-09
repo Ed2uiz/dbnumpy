@@ -126,6 +126,8 @@ class DBArray[ScalarT: np.generic]:
         )
 
     def transpose(self) -> DBArray[ScalarT]:
+        if isinstance(self._expr, Transpose):
+            return matrix_from_expr(self.backend, self._expr.arg)
         return matrix_from_expr(self.backend, Transpose(self._expr))
 
     def take(
