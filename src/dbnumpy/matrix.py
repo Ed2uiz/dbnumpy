@@ -33,6 +33,47 @@ if TYPE_CHECKING:
     from dbnumpy.indexing import DBScalar, DBVector
 
 
+UNARY_UFUNCS: dict[np.ufunc, UnaryOp] = {
+    np.negative: UnaryOp.NEGATIVE,
+    np.absolute: UnaryOp.ABSOLUTE,
+    np.sqrt: UnaryOp.SQRT,
+    np.exp: UnaryOp.EXP,
+    np.expm1: UnaryOp.EXPM1,
+    np.log: UnaryOp.LOG,
+    np.log1p: UnaryOp.LOG1P,
+    np.sin: UnaryOp.SIN,
+    np.cos: UnaryOp.COS,
+    np.tan: UnaryOp.TAN,
+    np.floor: UnaryOp.FLOOR,
+    np.ceil: UnaryOp.CEIL,
+    np.sign: UnaryOp.SIGN,
+    np.trunc: UnaryOp.TRUNC,
+    np.isnan: UnaryOp.ISNAN,
+    np.log2: UnaryOp.LOG2,
+    np.log10: UnaryOp.LOG10,
+    np.sinh: UnaryOp.SINH,
+    np.cosh: UnaryOp.COSH,
+    np.tanh: UnaryOp.TANH,
+    np.arcsin: UnaryOp.ARCSIN,
+    np.arccos: UnaryOp.ARCCOS,
+    np.arctan: UnaryOp.ARCTAN,
+}
+
+BINARY_UFUNCS: dict[np.ufunc, BinaryOp] = {
+    np.add: BinaryOp.ADD,
+    np.subtract: BinaryOp.SUBTRACT,
+    np.multiply: BinaryOp.MULTIPLY,
+    np.true_divide: BinaryOp.TRUE_DIVIDE,
+    np.power: BinaryOp.POWER,
+    np.greater: BinaryOp.GREATER,
+    np.greater_equal: BinaryOp.GREATER_EQUAL,
+    np.less: BinaryOp.LESS,
+    np.less_equal: BinaryOp.LESS_EQUAL,
+    np.equal: BinaryOp.EQUAL,
+    np.not_equal: BinaryOp.NOT_EQUAL,
+}
+
+
 class DBArray[ScalarT: np.generic]:
     """Base class for a lazy two-dimensional database-backed array.
 
@@ -525,53 +566,15 @@ class DBArray[ScalarT: np.generic]:
         if any(key != "out" for key in kwargs):
             return NotImplemented
 
-        unary = {
-            np.negative: UnaryOp.NEGATIVE,
-            np.absolute: UnaryOp.ABSOLUTE,
-            np.sqrt: UnaryOp.SQRT,
-            np.exp: UnaryOp.EXP,
-            np.expm1: UnaryOp.EXPM1,
-            np.log: UnaryOp.LOG,
-            np.log1p: UnaryOp.LOG1P,
-            np.sin: UnaryOp.SIN,
-            np.cos: UnaryOp.COS,
-            np.tan: UnaryOp.TAN,
-            np.floor: UnaryOp.FLOOR,
-            np.ceil: UnaryOp.CEIL,
-            np.sign: UnaryOp.SIGN,
-            np.trunc: UnaryOp.TRUNC,
-            np.isnan: UnaryOp.ISNAN,
-            np.log2: UnaryOp.LOG2,
-            np.log10: UnaryOp.LOG10,
-            np.sinh: UnaryOp.SINH,
-            np.cosh: UnaryOp.COSH,
-            np.tanh: UnaryOp.TANH,
-            np.arcsin: UnaryOp.ARCSIN,
-            np.arccos: UnaryOp.ARCCOS,
-            np.arctan: UnaryOp.ARCTAN,
-        }
-        if ufunc in unary and len(inputs) == 1:
-            return self._unary(unary[ufunc])
+        if ufunc in UNARY_UFUNCS and len(inputs) == 1:
+            return self._unary(UNARY_UFUNCS[ufunc])
 
-        binary = {
-            np.add: BinaryOp.ADD,
-            np.subtract: BinaryOp.SUBTRACT,
-            np.multiply: BinaryOp.MULTIPLY,
-            np.true_divide: BinaryOp.TRUE_DIVIDE,
-            np.power: BinaryOp.POWER,
-            np.greater: BinaryOp.GREATER,
-            np.greater_equal: BinaryOp.GREATER_EQUAL,
-            np.less: BinaryOp.LESS,
-            np.less_equal: BinaryOp.LESS_EQUAL,
-            np.equal: BinaryOp.EQUAL,
-            np.not_equal: BinaryOp.NOT_EQUAL,
-        }
-        if ufunc in binary and len(inputs) == 2:
+        if ufunc in BINARY_UFUNCS and len(inputs) == 2:
             left, right = inputs
             if isinstance(left, DBArray):
-                return left._binary(right, binary[ufunc])
+                return left._binary(right, BINARY_UFUNCS[ufunc])
             if isinstance(right, DBArray):
-                return right._binary(left, binary[ufunc], reverse=True)
+                return right._binary(left, BINARY_UFUNCS[ufunc], reverse=True)
         if ufunc is np.matmul and len(inputs) == 2:
             left, right = inputs
             if isinstance(left, DBArray):

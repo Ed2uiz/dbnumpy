@@ -165,52 +165,16 @@ class _LazyRankedResult:
             return NotImplemented
         if any(key != "out" for key in kwargs):
             return NotImplemented
-        unary = {
-            np.negative: UnaryOp.NEGATIVE,
-            np.absolute: UnaryOp.ABSOLUTE,
-            np.sqrt: UnaryOp.SQRT,
-            np.exp: UnaryOp.EXP,
-            np.expm1: UnaryOp.EXPM1,
-            np.log: UnaryOp.LOG,
-            np.log1p: UnaryOp.LOG1P,
-            np.sin: UnaryOp.SIN,
-            np.cos: UnaryOp.COS,
-            np.tan: UnaryOp.TAN,
-            np.floor: UnaryOp.FLOOR,
-            np.ceil: UnaryOp.CEIL,
-            np.sign: UnaryOp.SIGN,
-            np.trunc: UnaryOp.TRUNC,
-            np.isnan: UnaryOp.ISNAN,
-            np.log2: UnaryOp.LOG2,
-            np.log10: UnaryOp.LOG10,
-            np.sinh: UnaryOp.SINH,
-            np.cosh: UnaryOp.COSH,
-            np.tanh: UnaryOp.TANH,
-            np.arcsin: UnaryOp.ARCSIN,
-            np.arccos: UnaryOp.ARCCOS,
-            np.arctan: UnaryOp.ARCTAN,
-        }
-        if ufunc in unary and len(inputs) == 1:
-            return self._unary(unary[ufunc])
-        binary = {
-            np.add: BinaryOp.ADD,
-            np.subtract: BinaryOp.SUBTRACT,
-            np.multiply: BinaryOp.MULTIPLY,
-            np.true_divide: BinaryOp.TRUE_DIVIDE,
-            np.power: BinaryOp.POWER,
-            np.greater: BinaryOp.GREATER,
-            np.greater_equal: BinaryOp.GREATER_EQUAL,
-            np.less: BinaryOp.LESS,
-            np.less_equal: BinaryOp.LESS_EQUAL,
-            np.equal: BinaryOp.EQUAL,
-            np.not_equal: BinaryOp.NOT_EQUAL,
-        }
-        if ufunc in binary and len(inputs) == 2:
+        from dbnumpy.matrix import BINARY_UFUNCS, UNARY_UFUNCS
+
+        if ufunc in UNARY_UFUNCS and len(inputs) == 1:
+            return self._unary(UNARY_UFUNCS[ufunc])
+        if ufunc in BINARY_UFUNCS and len(inputs) == 2:
             left, right = inputs
             if left is self:
-                return self._binary(right, binary[ufunc])
+                return self._binary(right, BINARY_UFUNCS[ufunc])
             if right is self:
-                return self._binary(left, binary[ufunc], reverse=True)
+                return self._binary(left, BINARY_UFUNCS[ufunc], reverse=True)
         return NotImplemented
 
     def __array_function__(
