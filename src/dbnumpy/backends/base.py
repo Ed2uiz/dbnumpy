@@ -142,9 +142,7 @@ class Backend(ABC):
         ):
             raise TypeError(f"dense matrix values must be numeric, got {array.dtype}")
         if np.issubdtype(array.dtype, np.complexfloating):
-            raise TypeError(
-                "complex matrix values are not supported by the V1 float64 IR"
-            )
+            raise TypeError("complex matrix values are not supported; use float64")
         rows, cols = array.shape
         self._guard_dense_input(rows * cols)
         if rows and cols:
@@ -193,7 +191,7 @@ class Backend(ABC):
         ):
             raise TypeError(f"COO data must be numeric, got {raw_x.dtype}")
         if np.issubdtype(raw_x.dtype, np.complexfloating):
-            raise TypeError("complex COO data are not supported by the V1 float64 IR")
+            raise TypeError("complex COO data are not supported; use float64")
         i = raw_i.astype(np.int64, copy=False)
         j = raw_j.astype(np.int64, copy=False)
         x = raw_x.astype(np.float64, copy=False)

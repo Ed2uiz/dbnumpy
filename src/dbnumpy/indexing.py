@@ -791,7 +791,7 @@ def _normalize_selector(
         )
     if array.ndim != 1:
         raise UnsupportedOperationError(
-            "advanced selectors must be one-dimensional in this indexing tranche"
+            "advanced selectors must be one-dimensional"
         )
     if np.issubdtype(array.dtype, np.bool_):
         if len(array) not in (0, size):
