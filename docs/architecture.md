@@ -73,9 +73,10 @@ The SQL and native DataFusion paths share the code that visits inputs and
 orders operands. Engine-specific numerical expressions remain separate where
 the engines behave differently. Tests compare their results with NumPy.
 
-DataFusion chooses its execution path in one place. Collection, `compute()`,
-and `explain()` use that choice. `compile()` always returns equivalent SQL;
-it does not claim that DataFusion will execute that SQL text.
+DataFusion selects between native execution and SQL for `to_numpy()`,
+`compute()` and `explain()`. `to_scipy()` and `show()` use generated matrix
+SQL. Reductions generate their own SQL queries. `compile()` returns equivalent
+matrix SQL; it does not claim that DataFusion will execute that SQL text.
 
 Long relational plans use named SQL stages to limit query nesting. A stage is
 part of the same query, not a stored intermediate result. The database still
