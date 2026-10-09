@@ -62,6 +62,8 @@ jobs:
           python -m pip install --only-binary=:all: -e '.[dev,docs]'
       - name: Lint
         run: ruff check src tests benchmarks examples scripts
+      - name: Format check
+        run: ruff format --check src tests benchmarks examples scripts
       - name: Type check
         run: mypy src/dbnumpy
       - name: Bounded query and reproducibility checks

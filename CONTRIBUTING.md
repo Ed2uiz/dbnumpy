@@ -15,6 +15,7 @@ commit. Run these before opening a pull request:
 
 ```bash
 ruff check src tests benchmarks examples scripts
+ruff format --check src tests benchmarks examples scripts
 mypy src/dbnumpy
 pytest --cov=dbnumpy --cov-report=term-missing --cov-fail-under=80
 python scripts/query_checks.py  # Linux or WSL 2
