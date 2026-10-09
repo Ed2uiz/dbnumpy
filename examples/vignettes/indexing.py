@@ -26,15 +26,9 @@ with DuckDBBackend.connect() as backend:
     np.testing.assert_array_equal(row.to_numpy(), reference[1, :])
     np.testing.assert_array_equal(column.to_numpy(), reference[:, -1])
     assert scalar.item() == reference[2, 3]
-    np.testing.assert_array_equal(
-        reversed_matrix.to_numpy(), reference[::-1, ::-2]
-    )
-    np.testing.assert_array_equal(
-        gathered.to_numpy(), reference[[3, 1, 3], 1:5:2]
-    )
-    np.testing.assert_array_equal(
-        cartesian.to_numpy(), reference[[3, 1], :][:, [4, 0]]
-    )
+    np.testing.assert_array_equal(reversed_matrix.to_numpy(), reference[::-1, ::-2])
+    np.testing.assert_array_equal(gathered.to_numpy(), reference[[3, 1, 3], 1:5:2])
+    np.testing.assert_array_equal(cartesian.to_numpy(), reference[[3, 1], :][:, [4, 0]])
 
     # Construction and compilation are lazy; only collection above executes.
     print("vector semantic plan rank:", row.plan()["result"]["rank"])

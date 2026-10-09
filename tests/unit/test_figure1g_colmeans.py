@@ -45,9 +45,7 @@ def test_parse_sizes_supports_stages_and_largest_case() -> None:
 def test_emergency_threshold_is_not_the_engine_budget() -> None:
     physical = 16 * 1024**3
     assert benchmark.default_emergency_rss_bytes(physical) == int(physical * 0.8)
-    args = benchmark.parse_args(
-        ["--data-dir", "/data", "--output-dir", "/results"]
-    )
+    args = benchmark.parse_args(["--data-dir", "/data", "--output-dir", "/results"])
     assert args.engine_memory_gb == 1.0
     assert args.duckdb_ingest_memory_gb is None
     assert benchmark.resolve_duckdb_ingest_memory_gb(1.0, None) == 1.0
@@ -62,9 +60,7 @@ def test_macos_swap_snapshot_tracks_system_swap_pressure(
     monkeypatch.setattr(
         benchmark.subprocess,
         "check_output",
-        lambda *args, **kwargs: (
-            "total = 21504.00M  used = 18907.31M  free = 2596.69M"
-        ),
+        lambda *args, **kwargs: "total = 21504.00M  used = 18907.31M  free = 2596.69M",
     )
 
     assert benchmark.swap_snapshot() == {
@@ -189,9 +185,10 @@ def test_results_include_json_and_csv_without_losing_nested_telemetry(
 def test_backend_labels_describe_the_full_ingestion_path() -> None:
     assert "SciPy sparse" in benchmark.BACKEND_LABELS["scipy-host"]
     assert "MTX ingested" in benchmark.BACKEND_LABELS["duckdb-mtx-table"]
-    assert "external canonical Parquet" in benchmark.BACKEND_LABELS[
-        "datafusion-parquet-scan"
-    ]
+    assert (
+        "external canonical Parquet"
+        in benchmark.BACKEND_LABELS["datafusion-parquet-scan"]
+    )
 
 
 def test_scipy_two_billion_payload_lower_bounds_are_explicit() -> None:

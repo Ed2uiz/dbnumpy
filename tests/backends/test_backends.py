@@ -402,9 +402,7 @@ def test_capabilities_are_explicit_and_backend_specific(backend: Backend) -> Non
     assert capabilities.native_matrix_market_ingestion is isinstance(
         backend, DuckDBBackend
     )
-    assert capabilities.external_parquet_scan is isinstance(
-        backend, DataFusionBackend
-    )
+    assert capabilities.external_parquet_scan is isinstance(backend, DataFusionBackend)
 
 
 @pytest.mark.backend

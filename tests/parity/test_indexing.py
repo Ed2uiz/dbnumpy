@@ -198,9 +198,7 @@ def test_sparse_gather_restores_implicit_zeros_and_scalar_zero(
     assert result.storage.value == "sparse"
     np.testing.assert_array_equal(result.to_numpy(), expected)
     assert matrix[0, 0].item() == 0.0
-    np.testing.assert_array_equal(
-        matrix[[2, 1, 0], 1].to_numpy(), values[[2, 1, 0], 1]
-    )
+    np.testing.assert_array_equal(matrix[[2, 1, 0], 1].to_numpy(), values[[2, 1, 0], 1])
 
     densified = matrix[[2, 0, 2], :] + 1.0
     np.testing.assert_array_equal(densified.to_numpy(), values[[2, 0, 2], :] + 1.0)
@@ -313,12 +311,8 @@ def test_lazy_scalar_broadcasts_with_host_ranked_arrays(backend: Backend) -> Non
 
     assert (scalar + np.array(2.0)).item() == scalar_value + 2.0
     vector = np.arange(4.0)
-    np.testing.assert_array_equal(
-        (scalar - vector).to_numpy(), scalar_value - vector
-    )
-    np.testing.assert_array_equal(
-        (vector - scalar).to_numpy(), vector - scalar_value
-    )
+    np.testing.assert_array_equal((scalar - vector).to_numpy(), scalar_value - vector)
+    np.testing.assert_array_equal((vector - scalar).to_numpy(), vector - scalar_value)
     host_matrix = np.arange(8.0).reshape(2, 4)
     np.testing.assert_array_equal(
         (scalar + host_matrix).to_numpy(), scalar_value + host_matrix

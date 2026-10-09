@@ -309,9 +309,7 @@ def _path_row(
         "execute_collect_median_ms": execute_timing.median_ms,
         "execute_collect_samples_ms": list(execute_timing.samples_ms),
         "sql_bytes": None if sql is None else len(sql.encode()),
-        "sql_sha256": None
-        if sql is None
-        else hashlib.sha256(sql.encode()).hexdigest(),
+        "sql_sha256": None if sql is None else hashlib.sha256(sql.encode()).hexdigest(),
         "sql": sql,
         "result_rows": result_rows,
         "correctness": "exact",
@@ -357,9 +355,7 @@ def run_case(
                 i, j, values[i, j], shape=values.shape, name="index_source"
             )
 
-        selector_fixture = make_selector(
-            pattern, selector_size, source_rows, seed=seed
-        )
+        selector_fixture = make_selector(pattern, selector_size, source_rows, seed=seed)
         normalization = timed(
             lambda: normalize_selector(selector_fixture, source_rows),
             repeats=repeats,
@@ -559,8 +555,7 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
     max_output = max(args.selector_sizes) * args.source_cols
     if max_output > MAX_OUTPUT_CELLS:
         parser.error(
-            f"default safety guard limits gathered output to "
-            f"{MAX_OUTPUT_CELLS:,} cells"
+            f"default safety guard limits gathered output to {MAX_OUTPUT_CELLS:,} cells"
         )
 
 

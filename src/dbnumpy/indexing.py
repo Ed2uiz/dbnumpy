@@ -593,9 +593,7 @@ class DBScalar(_LazyRankedResult):
         )
 
 
-def index_matrix(
-    matrix: DBArray[Any], key: Any
-) -> DBArray[Any] | DBVector | DBScalar:
+def index_matrix(matrix: DBArray[Any], key: Any) -> DBArray[Any] | DBVector | DBScalar:
     """Build a lazy, NumPy-shaped basic or one-axis advanced index plan."""
 
     with matrix.backend._registration_scope():
@@ -757,9 +755,7 @@ def _normalize_selector(
             "only integers, slices, ellipsis, and integer or Boolean arrays are valid"
         )
     if array.ndim != 1:
-        raise UnsupportedOperationError(
-            "advanced selectors must be one-dimensional"
-        )
+        raise UnsupportedOperationError("advanced selectors must be one-dimensional")
     if np.issubdtype(array.dtype, np.bool_):
         if len(array) not in (0, size):
             raise IndexError(

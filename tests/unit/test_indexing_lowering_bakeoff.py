@@ -66,10 +66,7 @@ def test_execution_order_balances_position_and_predecessor() -> None:
         return pa.table({"i": [0], "j": [0], "x": [1.0]})
 
     timings, orders = benchmark.rotated_execution(
-        {
-            name: (lambda path=name: executor(path))
-            for name in benchmark.PATHS
-        },
+        {name: (lambda path=name: executor(path)) for name in benchmark.PATHS},
         repeats=8,
     )
 

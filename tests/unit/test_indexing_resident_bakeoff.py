@@ -125,9 +125,7 @@ def test_streaming_reference_is_independent_and_shape_checked(tmp_path: Path) ->
     parquet = tmp_path / "canonical.parquet"
     fixture(parquet)
     selector = np.array([0, 0, 1], dtype=np.int64)
-    reference = benchmark.inspect_fixture(
-        parquet, shape=(12, 20), selector=selector
-    )
+    reference = benchmark.inspect_fixture(parquet, shape=(12, 20), selector=selector)
 
     values = np.arange(1, 37, dtype=np.float64).reshape(12, 3)
     expected = (np.abs(values[[0, 0, 1], :]) * 1.5).sum()

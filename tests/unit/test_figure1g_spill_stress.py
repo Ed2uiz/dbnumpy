@@ -38,9 +38,7 @@ def test_contract_requires_identical_canonical_artifacts(tmp_path: Path) -> None
     duck = tmp_path / "duck.json"
     parquet = tmp_path / "parquet.json"
     duck.write_text(
-        json.dumps(
-            _manifest_payload("duckdb-persistent-table", columns=2, nnz=2_000)
-        )
+        json.dumps(_manifest_payload("duckdb-persistent-table", columns=2, nnz=2_000))
     )
     parquet_payload = _manifest_payload(
         "datafusion-canonical-parquet", columns=2, nnz=2_000
@@ -57,9 +55,7 @@ def test_contract_requires_identical_canonical_artifacts(tmp_path: Path) -> None
         "sum_x": 2_000.0,
     }
     parquet.write_text(json.dumps(parquet_payload))
-    contract = benchmark.load_artifact_contract(
-        duck, parquet, columns=2, nnz=2_000
-    )
+    contract = benchmark.load_artifact_contract(duck, parquet, columns=2, nnz=2_000)
     assert contract.expected_mean == 0.05
 
     parquet_payload["source_size"] = 124
@@ -93,9 +89,7 @@ def test_cli_scans_tiny_artifacts_with_all_backends(tmp_path: Path) -> None:
     parquet_manifest = tmp_path / "canonical.manifest.json"
     duck_manifest.write_text(
         json.dumps(
-            _manifest_payload(
-                "duckdb-persistent-table", columns=columns, nnz=nnz
-            )
+            _manifest_payload("duckdb-persistent-table", columns=columns, nnz=nnz)
         )
     )
     parquet_payload = _manifest_payload(
@@ -156,12 +150,10 @@ def test_cli_scans_tiny_artifacts_with_all_backends(tmp_path: Path) -> None:
     assert all("peak_spill_bytes" in row for row in payload["results"])
     assert all("peak_rss_bytes" in row for row in payload["results"])
     assert all(
-        row["emergency_rss_threshold_bytes"]
-        == payload["emergency_rss_threshold_bytes"]
+        row["emergency_rss_threshold_bytes"] == payload["emergency_rss_threshold_bytes"]
         for row in payload["results"]
     )
     assert payload["results"][0]["expected_mean"] == 0.05
     assert (
-        payload["results"][1]["parquet_files"]
-        == payload["results"][2]["parquet_files"]
+        payload["results"][1]["parquet_files"] == payload["results"][2]["parquet_files"]
     )
