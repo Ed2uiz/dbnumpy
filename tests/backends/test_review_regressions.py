@@ -249,6 +249,20 @@ def test_failed_wrap_does_not_delete_borrowed_relation(backend: Backend) -> None
     assert wrapped.sum() == 3
 
 
+@pytest.mark.parametrize("i", [-1, 2])
+def test_collection_rejects_out_of_bounds_relation_coordinates(
+    backend: Backend, i: int
+) -> None:
+    backend._register_arrow("outside", pa.table({"i": [i], "j": [0], "x": [7.0]}))
+    matrix = backend.from_relation("outside", shape=(2, 1), storage="sparse")
+    with pytest.raises(ValueError, match="outside the declared matrix shape"):
+        matrix.to_numpy()
+    with pytest.raises(ValueError, match="outside the declared matrix shape"):
+        matrix.sum(axis=1)
+    with pytest.raises(ValueError, match="outside the declared matrix shape"):
+        matrix[:, 0].to_numpy()
+
+
 def test_failed_gather_releases_selector_resources(backend: Backend) -> None:
     matrix = backend.from_numpy(np.ones((3, 4)))
     owned = backend._owned_relations.copy()
