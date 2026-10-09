@@ -901,7 +901,9 @@ class DBArray[ScalarT: np.generic]:
         return normalized
 
     @staticmethod
-    def _normalize_keepdims(keepdims: bool) -> bool:
+    def _normalize_keepdims(keepdims: Any) -> bool:
+        if isinstance(keepdims, np.bool_):  # NumPy < 2.3 accepts it as an index
+            raise TypeError(f"keepdims must be an integer; got {keepdims!r}")
         try:
             return index(keepdims) != 0
         except TypeError as exc:
