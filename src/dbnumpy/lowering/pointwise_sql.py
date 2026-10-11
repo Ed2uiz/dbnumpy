@@ -401,6 +401,9 @@ class PointwiseSQLCompiler:
         if math.isinf(numeric):
             sign = "-Infinity" if numeric < 0 else "Infinity"
             return f"CAST('{sign}' AS DOUBLE)"
+        if numeric == 0.0 and math.copysign(1.0, numeric) < 0:
+            # DuckDB reads a bare -0.0 as an unsigned decimal zero.
+            return "CAST('-0.0' AS DOUBLE)"
         return repr(numeric)
 
     @staticmethod

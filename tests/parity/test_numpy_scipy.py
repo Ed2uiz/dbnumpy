@@ -427,7 +427,11 @@ def test_reverse_division_matches_numpy_inf_nan_semantics(backend: Backend) -> N
     matrix = backend.from_scipy(sparse.csr_array(values))
     with np.errstate(divide="ignore", invalid="ignore"):
         expected = 1.0 / values
+        negative_zero = values / -0.0
     np.testing.assert_allclose((1.0 / matrix).to_numpy(), expected, equal_nan=True)
+    np.testing.assert_allclose(
+        (matrix / -0.0).to_numpy(), negative_zero, equal_nan=True
+    )
 
 
 @pytest.mark.parity

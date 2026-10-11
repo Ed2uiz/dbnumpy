@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -101,12 +102,13 @@ def _integer_quotient(left: int, right: int) -> int:
 
 
 def _float_literal(value: float) -> ir.Value:
-    # Ibis's DataFusion literal writer loses the sign of negative infinity.
-    return (
-        -ibis.literal(float("inf"))
-        if value == float("-inf")
-        else ibis.literal(value, type="float64")
-    )
+    # Ibis's DataFusion literal writer loses the sign of negative infinity, and
+    # DuckDB reads -(0.0) as an unsigned decimal zero, unlike -1.0 / inf.
+    if value == float("-inf"):
+        return -ibis.literal(float("inf"), type="float64")
+    if value == 0.0 and math.copysign(1.0, value) < 0:
+        return -ibis.literal(1.0, type="float64") / float("inf")
+    return ibis.literal(value, type="float64")
 
 
 def _relational_sql(table: ir.Table, *, dialect: str) -> str:
