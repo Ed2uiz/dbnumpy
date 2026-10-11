@@ -224,6 +224,28 @@ def test_overwrite_preserves_immutable_copied_inputs(tmp_path: Path) -> None:
     assert "values" in backend._arrow_objects
     np.testing.assert_array_equal(matrix.to_numpy(), [[2]])
 
+    result = matrix.compute(name="result")
+    with pytest.raises(ValueError, match="cannot overwrite .* computed relation"):
+        backend.from_mtx(path, name="result", overwrite=True)
+    assert result.sum() == 2
+
+
+@pytest.mark.backend
+@pytest.mark.parametrize("body", ["1.4 1 8", "1 1e0 8", "1 1 2.5", "1 1 2e0"])
+def test_integer_fields_reject_non_integers(tmp_path: Path, body: str) -> None:
+    path = tmp_path / "input.mtx"
+    banner = "%%MatrixMarket matrix coordinate integer general\n2 2 1\n"
+    path.write_text(banner + "1 1 3\n")
+    backend = DuckDBBackend.connect()
+    matrix = backend.from_mtx(path, name="values")
+    path.write_text(banner + body + "\n")
+    for canonical in (False, True):
+        with pytest.raises(ValueError, match="malformed"):
+            backend.from_mtx(
+                path, name="values", overwrite=True, assume_canonical=canonical
+            )
+    assert matrix.sum() == 3
+
 
 @pytest.mark.backend
 @pytest.mark.parametrize(
