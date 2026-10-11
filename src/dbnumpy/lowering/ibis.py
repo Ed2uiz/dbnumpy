@@ -1202,7 +1202,7 @@ class IbisLowerer:
         elif op is BinaryOp.POWER:
             negative_infinity = -ibis.literal(float("inf"), type="float64")
             is_zero = (left == 0.0) | ((1.0 / left) == negative_infinity)
-            unsafe = is_zero & (right < 0.0)
+            unsafe = is_zero & (right < 0.0) & ~IbisLowerer._is_zero(right)
             square_root_zero = is_zero & (right == 0.5)
             negative_zero = (1.0 / left) < 0.0
             odd_integer = (right == _floor_float64(right)) & (

@@ -464,7 +464,7 @@ def test_signed_zero_negative_powers_follow_numpy(backend: Backend) -> None:
     values = np.array([[-0.0, -0.0, 0.0, 0.0]])
     matrix = backend.from_numpy(values)
     with np.errstate(all="ignore"):
-        for exponent in (-3.0, -2.0, -1.0, -0.5, 0.5, 1.0, 2.0, 3.0):
+        for exponent in (-3.0, -2.0, -1.0, -0.5, -0.0, 0.0, 0.5, 1.0, 2.0, 3.0):
             np.testing.assert_array_equal(
                 (matrix**exponent).to_numpy(), values**exponent
             )
