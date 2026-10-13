@@ -10,10 +10,12 @@ python -m pip install --only-binary=:all: -e '.[dev,docs]'
 
 ## Checks
 
-Run these before opening a pull request:
+Install the Git hooks once with `pre-commit install`; they run ruff on each
+commit. Run these before opening a pull request:
 
 ```bash
 ruff check src tests benchmarks examples scripts
+ruff format --check src tests benchmarks examples scripts
 mypy src/dbnumpy
 pytest --cov=dbnumpy --cov-report=term-missing --cov-fail-under=80
 python scripts/query_checks.py  # Linux or WSL 2
@@ -34,8 +36,9 @@ python -m venv .wheel-smoke
 .wheel-smoke/bin/python scripts/artifact_smoke.py
 ```
 
-CI runs tests on Python 3.12, 3.13 and 3.14. Tests run serially with bounded
-engine memory and thread counts. Do not use `pytest-xdist` by default.
+CI runs tests on Linux with Python 3.12, 3.13 and 3.14, on macOS with Python
+3.14, and on Linux with the lowest supported dependencies. Tests run serially
+with bounded engine memory and thread counts. Do not use `pytest-xdist` by default.
 
 A separate CI job installs `benchmarks/requirements-pbmc.txt` and checks the
 shared workflow and independent benchmark reference on small synthetic data.

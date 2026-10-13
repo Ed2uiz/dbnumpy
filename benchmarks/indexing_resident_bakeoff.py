@@ -179,10 +179,7 @@ def _fixed_gather(expr: MatrixExpr) -> Gather:
 
 def _fixed_relations(expr: MatrixExpr) -> tuple[str, str, str]:
     gathered = _fixed_gather(expr)
-    if (
-        not isinstance(gathered.arg, Source)
-        or not gathered.map_relation
-    ):
+    if not isinstance(gathered.arg, Source) or not gathered.map_relation:
         raise ValueError("control requires one axis mapping over a Source")
     coordinate = "i" if gathered.axis == 0 else "j"
     return gathered.arg.relation, gathered.map_relation, coordinate
@@ -214,9 +211,7 @@ def sqlalchemy_count(expr: MatrixExpr) -> Any:
     source = sa.table(source_name, sa.column(coordinate, sa.BigInteger()))
     selector = sa.table(selector_name, sa.column("source_index", sa.BigInteger()))
     return sa.select(sa.func.count().label("stored_rows")).select_from(
-        selector.join(
-            source, selector.c.source_index == getattr(source.c, coordinate)
-        )
+        selector.join(source, selector.c.source_index == getattr(source.c, coordinate))
     )
 
 
@@ -251,9 +246,7 @@ def native_scalar_plan(backend: Any, expr: MatrixExpr) -> Any:
     if isinstance(backend, DuckDBBackend):
         source = backend.connection.table(source_name).set_alias("s")
         selector = backend.connection.table(selector_name).set_alias("m")
-        return selector.join(
-            source, f"m.source_index = s.{coordinate}"
-        ).aggregate(
+        return selector.join(source, f"m.source_index = s.{coordinate}").aggregate(
             "sum(abs(s.x) * 1.5) AS value"
         )
     from datafusion import col
@@ -272,9 +265,7 @@ def native_count_plan(backend: Any, expr: MatrixExpr) -> Any:
     if isinstance(backend, DuckDBBackend):
         source = backend.connection.table(source_name).set_alias("s")
         selector = backend.connection.table(selector_name).set_alias("m")
-        return selector.join(
-            source, f"m.source_index = s.{coordinate}"
-        ).aggregate(
+        return selector.join(source, f"m.source_index = s.{coordinate}").aggregate(
             "count(*) AS stored_rows"
         )
     from datafusion import functions as f
@@ -418,9 +409,7 @@ def inspect_fixture(
     if parquet.metadata.num_rows < 1:
         raise ValueError("fixture must contain at least one stored coordinate")
 
-    weights = np.bincount(selector, minlength=shape[axis]).astype(
-        np.int64, copy=False
-    )
+    weights = np.bincount(selector, minlength=shape[axis]).astype(np.int64, copy=False)
     scalar_parts: list[float] = []
     selected_stored_rows = 0
     observed_rows = 0
@@ -526,9 +515,7 @@ def run_case(
     try:
         selector_fixture = make_selector(selector_size, shape[axis], seed=seed)
         normalize_samples, selector = samples(
-            lambda: normalize_selector(
-                selector_fixture, shape[axis], axis=axis
-            ),
+            lambda: normalize_selector(selector_fixture, shape[axis], axis=axis),
             repeats=repeats,
         )
         selector_hash = hashlib.sha256(selector.tobytes()).hexdigest()
@@ -545,9 +532,7 @@ def run_case(
         selector_registration_ms = (perf_counter() - start) * 1_000
         start = perf_counter()
         output_shape = (
-            (selector_size, shape[1])
-            if axis == 0
-            else (shape[0], selector_size)
+            (selector_size, shape[1]) if axis == 0 else (shape[0], selector_size)
         )
         rows_relation, cols_relation = backend.dimension_relations(output_shape)
         dimension_setup_ms = (perf_counter() - start) * 1_000
@@ -645,9 +630,7 @@ def run_case(
             )
         expected_scalar = float(reference["expected_scalar"])
         for values in scalar_values.values():
-            np.testing.assert_allclose(
-                values, expected_scalar, rtol=1e-11, atol=1e-8
-            )
+            np.testing.assert_allclose(values, expected_scalar, rtol=1e-11, atol=1e-8)
 
         build_data = {
             "dbverse_ibis": (
@@ -810,9 +793,7 @@ def run_benchmark(args: argparse.Namespace, parquet: Path) -> dict[str, Any]:
     fixture_reference = inspect_fixture(
         parquet, shape=shape, selector=selector, axis=args.axis
     )
-    actual_stored_rows = int(
-        fixture_reference["expected_stored_gather_rows"]
-    )
+    actual_stored_rows = int(fixture_reference["expected_stored_gather_rows"])
     if actual_stored_rows > args.max_stored_gather_rows:
         raise ValueError(
             f"actual selected stored rows {actual_stored_rows:,} exceed "

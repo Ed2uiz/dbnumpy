@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Stress Figure 1g column means under a small engine spill budget.
+"""Stress column means under a small engine spill budget.
+
+Inputs are the Figure 1g fixtures from colmeans_out_of_core.py, named after
+Figure 1g (matrix column means) of the dbverse paper.
 
 This runner consumes already-prepared canonical artifacts. It never parses MTX,
 constructs host coordinate arrays, rewrites the persistent DuckDB database, or
@@ -44,9 +47,7 @@ class ArtifactContract:
 
 def physical_memory_bytes() -> int:
     if platform.system() == "Darwin":
-        return int(
-            subprocess.check_output(["sysctl", "-n", "hw.memsize"], text=True)
-        )
+        return int(subprocess.check_output(["sysctl", "-n", "hw.memsize"], text=True))
     return int(os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES"))
 
 
@@ -120,9 +121,7 @@ def _read_manifest(
     if missing:
         raise ValueError(f"artifact manifest {path} lacks fields: {missing}")
     if payload.get("schema_version") != 1 or payload.get("kind") != expected_kind:
-        raise ValueError(
-            f"artifact manifest {path} is not schema-1 {expected_kind!r}"
-        )
+        raise ValueError(f"artifact manifest {path} is not schema-1 {expected_kind!r}")
     contract = ArtifactContract(**{key: payload[key] for key in required})
     if contract.rows <= 0 or contract.columns <= 0 or contract.nnz <= 0:
         raise ValueError(f"artifact manifest {path} has nonpositive dimensions")
@@ -233,7 +232,7 @@ def _worker(case: dict[str, Any], connection: Any) -> None:
                 case["duckdb_database"],
                 read_only=True,
                 config={
-                    "memory_limit": f'{case["memory_budget_bytes"]}B',
+                    "memory_limit": f"{case['memory_budget_bytes']}B",
                     "threads": THREADS,
                     "temp_directory": str(spill),
                 },
@@ -248,7 +247,7 @@ def _worker(case: dict[str, Any], connection: Any) -> None:
             from dbnumpy import DuckDBBackend
 
             owner = DuckDBBackend.connect(
-                memory_limit=f'{case["memory_budget_bytes"]}B',
+                memory_limit=f"{case['memory_budget_bytes']}B",
                 threads=THREADS,
                 temp_directory=spill,
             )
@@ -493,7 +492,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     for row in results:
         if row["status"] != "success":
-            print(f'{row["backend"]}: {row["error"]}')
+            print(f"{row['backend']}: {row['error']}")
     return int(any(row["status"] != "success" for row in results))
 
 

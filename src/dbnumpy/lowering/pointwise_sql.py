@@ -326,9 +326,12 @@ class PointwiseSQLCompiler:
                 f"AND ABS({right} % 2.0) = 1.0 "
                 f"THEN {negative_infinity} ELSE {infinity} END"
             )
+            right_zero = PointwiseSQLCompiler._is_zero(
+                right, negative_infinity=negative_infinity
+            )
             unsafe = (
                 f"({left} = 0.0 OR (1.0 / {left}) = {negative_infinity}) "
-                f"AND {right} < 0.0"
+                f"AND {right} < 0.0 AND NOT {right_zero}"
             )
             square_root_zero = (
                 f"({left} = 0.0 OR (1.0 / {left}) = {negative_infinity}) "
@@ -398,6 +401,9 @@ class PointwiseSQLCompiler:
         if math.isinf(numeric):
             sign = "-Infinity" if numeric < 0 else "Infinity"
             return f"CAST('{sign}' AS DOUBLE)"
+        if numeric == 0.0 and math.copysign(1.0, numeric) < 0:
+            # DuckDB reads a bare -0.0 as an unsigned decimal zero.
+            return "CAST('-0.0' AS DOUBLE)"
         return repr(numeric)
 
     @staticmethod

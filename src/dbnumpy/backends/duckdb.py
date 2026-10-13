@@ -126,9 +126,9 @@ class DuckDBBackend(Backend):
                 "assume_canonical=True only supports general Matrix Market input"
             )
         relation = self._mtx_relation_name(name)
-        if relation in self._arrow_objects:
+        if relation in self._created_relations:
             raise ValueError(
-                f"cannot overwrite copied input or selector relation {relation!r}; "
+                f"cannot overwrite copied input or computed relation {relation!r}; "
                 "choose a new destination name"
             )
 
@@ -144,9 +144,7 @@ class DuckDBBackend(Backend):
             self.connection.execute("BEGIN TRANSACTION")
             transaction_started = True
             if relation_kind is not None:
-                self.connection.execute(
-                    f'DROP {relation_kind} "{relation}"'
-                )
+                self.connection.execute(f'DROP {relation_kind} "{relation}"')
             persistence = "TEMP " if temporary else ""
             load_sql = (
                 self._direct_mtx_sql(header)
@@ -179,9 +177,7 @@ class DuckDBBackend(Backend):
         # name see the replacement after commit, matching DuckDB relation semantics.
         self._arrow_objects.pop(relation, None)
         self._owned_relations.discard(relation)
-        return self.from_relation(
-            relation, shape=header.shape, storage="sparse"
-        )
+        return self.from_relation(relation, shape=header.shape, storage="sparse")
 
     def _mtx_relation_name(self, requested: str | None) -> str:
         if requested is not None:
@@ -205,9 +201,7 @@ class DuckDBBackend(Backend):
     @staticmethod
     def _raw_mtx_sql(header: MatrixMarketHeader) -> str:
         value_sql = (
-            "1.0"
-            if header.field == "pattern"
-            else "try_cast(parts[3] AS DOUBLE)"
+            "1.0" if header.field == "pattern" else "try_cast(parts[3] AS DOUBLE)"
         )
         if header.field == "integer":
             value_sql = (
@@ -217,7 +211,7 @@ class DuckDBBackend(Backend):
         # A delimiter forbidden by the Matrix Market grammar makes each physical
         # data row one VARCHAR. `comment` skips both the banner and `%` comments;
         # skip=1 then skips the first non-comment row, i.e. the size declaration.
-        return f'''
+        return f"""
             SELECT
                 CASE WHEN regexp_full_match(parts[1], '[+-]?[0-9]+')
                      THEN try_cast(parts[1] AS BIGINT) END AS raw_i,
@@ -233,11 +227,9 @@ class DuckDBBackend(Backend):
                 )
                 WHERE trim(line) <> ''
             )
-        '''
+        """
 
-    def _validate_direct_mtx(
-        self, relation: str, header: MatrixMarketHeader
-    ) -> None:
+    def _validate_direct_mtx(self, relation: str, header: MatrixMarketHeader) -> None:
         actual_entries = self.connection.execute(
             f'SELECT count(*) FROM "{relation}"'
         ).fetchone()[0]
@@ -299,10 +291,8 @@ class DuckDBBackend(Backend):
         if header.symmetry == "general":
             expanded = original
         else:
-            mirror_x = (
-                "-raw_x" if header.symmetry == "skew-symmetric" else "raw_x"
-            )
-            expanded = f'''
+            mirror_x = "-raw_x" if header.symmetry == "skew-symmetric" else "raw_x"
+            expanded = f"""
                 SELECT
                     CASE WHEN mirror = 0 THEN raw_i - 1 ELSE raw_j - 1 END AS i,
                     CASE WHEN mirror = 0 THEN raw_j - 1 ELSE raw_i - 1 END AS j,
@@ -311,8 +301,8 @@ class DuckDBBackend(Backend):
                 CROSS JOIN LATERAL range(
                     CASE WHEN raw_i = raw_j THEN 1 ELSE 2 END
                 ) AS copies(mirror)
-            '''
-        return f'''
+            """
+        return f"""
             WITH raw AS (
                 SELECT *, count(*) OVER () AS actual_entries
                 FROM ({raw})
@@ -340,7 +330,7 @@ class DuckDBBackend(Backend):
             FROM ({expanded})
             GROUP BY i, j
             HAVING sum(x) <> 0.0
-        '''
+        """
 
     @staticmethod
     def _direct_mtx_sql(header: MatrixMarketHeader) -> str:
@@ -349,15 +339,13 @@ class DuckDBBackend(Backend):
             if header.field == "pattern"
             else "{'raw_i': 'VARCHAR', 'raw_j': 'VARCHAR', 'raw_x': 'VARCHAR'}"
         )
-        value_sql = (
-            "1.0" if header.field == "pattern" else "try_cast(raw_x AS DOUBLE)"
-        )
+        value_sql = "1.0" if header.field == "pattern" else "try_cast(raw_x AS DOUBLE)"
         if header.field == "integer":
             value_sql = (
                 "CASE WHEN regexp_full_match(raw_x, '[+-]?[0-9]+') "
                 "THEN try_cast(raw_x AS DOUBLE) END"
             )
-        return f'''
+        return f"""
             SELECT
                 CASE WHEN regexp_full_match(raw_i, '[+-]?[0-9]+')
                      THEN try_cast(raw_i AS BIGINT) - 1 END AS i,
@@ -369,7 +357,7 @@ class DuckDBBackend(Backend):
                 columns={columns}, comment='%', skip=1,
                 ignore_errors=false
             )
-        '''
+        """
 
     def _register_arrow(self, name: str, table: pa.Table) -> None:
         self._validate_name(name)

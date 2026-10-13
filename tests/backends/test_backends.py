@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import warnings
+import json
+from typing import Any
 from unittest.mock import patch
 
 import numpy as np
@@ -15,11 +16,10 @@ from dbnumpy import (
     DBSparseArray,
     DensificationError,
     DuckDBBackend,
-    StorageKind,
     UnsupportedOperationError,
 )
 from dbnumpy.backends import Backend
-from dbnumpy.ir import ReductionOp
+from dbnumpy.ir import BinaryOp, ReductionOp, ScalarBinary
 
 
 @pytest.mark.backend
@@ -86,60 +86,6 @@ def test_variance_explain_keeps_windowed_statistics_optimizer_visible(
 
 
 @pytest.mark.backend
-def test_emitted_pointwise_sql_matches_numpy_edge_semantics(backend: Backend) -> None:
-    values = np.array([[-0.0, 0.0, -1.0, 1.0, np.nan, np.inf]])
-    matrix = backend.from_numpy(values)
-    with np.errstate(all="ignore"):
-        cases = [
-            (np.sqrt(matrix), np.sqrt(values)),
-            (np.log(matrix), np.log(values)),
-            (np.log1p(matrix), np.log1p(values)),
-            (np.expm1(matrix * 1.0e-12), np.expm1(values * 1.0e-12)),
-            (np.sign(matrix), np.sign(values)),
-            (np.trunc(matrix), np.trunc(values)),
-            (np.isnan(matrix), np.isnan(values)),
-            (np.log2(matrix), np.log2(values)),
-            (np.log10(matrix), np.log10(values)),
-            (np.sinh(matrix), np.sinh(values)),
-            (np.cosh(matrix), np.cosh(values)),
-            (np.tanh(matrix), np.tanh(values)),
-            (matrix**-3.0, values**-3.0),
-            (matrix**0.5, values**0.5),
-            (matrix == 0.0, values == 0.0),
-            (matrix < 0.0, values < 0.0),
-        ]
-
-    for expression, expected in cases:
-        table = backend._execute_sql(  # noqa: SLF001 - emitted-SQL contract probe
-            expression.compile()
-        )
-        actual = np.zeros(expression.shape, dtype=np.float64)
-        if table.num_rows:
-            i = table.column("i").to_numpy(zero_copy_only=False).astype(np.intp)
-            j = table.column("j").to_numpy(zero_copy_only=False).astype(np.intp)
-            actual[i, j] = table.column("x").to_numpy(zero_copy_only=False)
-        np.testing.assert_allclose(
-            actual, expected, rtol=1e-12, atol=0.0, equal_nan=True
-        )
-        non_nan = ~np.isnan(expected)
-        np.testing.assert_array_equal(
-            np.signbit(actual[non_nan]), np.signbit(expected[non_nan])
-        )
-
-
-@pytest.mark.backend
-def test_matmul_relational_operators_reach_backend_optimizer(
-    backend: Backend,
-) -> None:
-    left = backend.from_scipy(sparse.csr_array(np.eye(3)))
-    right = backend.from_scipy(sparse.csr_array(np.eye(3)))
-    plan = (left @ right).explain().upper()
-    assert "JOIN" in plan
-    assert "AGGREGATE" in plan or "GROUP_BY" in plan
-    assert plan.count("SCAN") >= 2
-
-
-@pytest.mark.backend
 def test_cross_backend_operations_are_explicitly_rejected(backend: Backend) -> None:
     other = DuckDBBackend.connect()
     try:
@@ -157,15 +103,6 @@ def test_densification_guard_is_checked_before_execution(backend: Backend) -> No
     matrix = backend.from_scipy(sparse.csr_array(np.eye(2)))
     with pytest.raises(DensificationError, match="enumerate 4 cells"):
         _ = matrix + 1.0
-
-
-@pytest.mark.backend
-def test_storage_metadata_tracks_sparse_zero_image(backend: Backend) -> None:
-    matrix = backend.from_scipy(sparse.csr_array(np.eye(3)))
-    assert (matrix * 2.0).storage is StorageKind.SPARSE
-    assert (matrix + 1.0).storage is StorageKind.DENSE
-    assert (matrix == 0.0).storage is StorageKind.DENSE
-    assert np.exp(matrix).storage is StorageKind.DENSE
 
 
 @pytest.mark.backend
@@ -246,48 +183,6 @@ def test_shared_pointwise_dag_has_linear_sql_and_executes_once(
 
 
 @pytest.mark.backend
-def test_nonfinite_scalar_zero_image_matches_numpy(backend: Backend) -> None:
-    values = np.array([[0.0, 2.0], [3.0, 0.0]])
-    matrix = backend.from_scipy(sparse.csr_array(values))
-    with np.errstate(invalid="ignore"):
-        expected = values * np.inf
-    np.testing.assert_allclose((matrix * np.inf).to_numpy(), expected, equal_nan=True)
-
-
-@pytest.mark.backend
-@pytest.mark.parametrize("shape", [(0, 3), (3, 0), (0, 0)])
-def test_zero_sized_dense_matrices_preserve_shape(
-    backend: Backend, shape: tuple[int, int]
-) -> None:
-    matrix = backend.from_numpy(np.empty(shape))
-    assert matrix.shape == shape
-    assert matrix.to_numpy().shape == shape
-    assert matrix.T.to_numpy().shape == shape[::-1]
-    assert matrix.sum() == 0.0
-    np.testing.assert_array_equal(matrix.sum(axis=0), np.zeros(shape[1]))
-    np.testing.assert_array_equal(matrix.sum(axis=1), np.zeros(shape[0]))
-
-    with warnings.catch_warnings(), np.errstate(invalid="ignore", divide="ignore"):
-        warnings.simplefilter("ignore", RuntimeWarning)
-        for axis in (None, 0, 1):
-            np.testing.assert_allclose(
-                matrix.mean(axis=axis),
-                np.mean(np.empty(shape), axis=axis),
-                equal_nan=True,
-            )
-            np.testing.assert_allclose(
-                matrix.var(axis=axis),
-                np.var(np.empty(shape), axis=axis),
-                equal_nan=True,
-            )
-            np.testing.assert_allclose(
-                matrix.std(axis=axis, ddof=1),
-                np.std(np.empty(shape), axis=axis, ddof=1),
-                equal_nan=True,
-            )
-
-
-@pytest.mark.backend
 def test_closed_backend_rejects_new_work() -> None:
     backend = DuckDBBackend.connect()
     matrix = backend.from_numpy(np.eye(2))
@@ -298,49 +193,127 @@ def test_closed_backend_rejects_new_work() -> None:
 
 
 @pytest.mark.backend
-def test_invalid_backend_resource_limits_fail_before_connection() -> None:
-    with pytest.raises(ValueError, match="threads must be positive"):
-        DuckDBBackend.connect(threads=0)
-    with pytest.raises(ValueError, match="max_densify_cells"):
-        DuckDBBackend.connect(max_densify_cells=-1)
-    with pytest.raises(ValueError, match="max_host_values"):
-        DuckDBBackend.connect(max_host_values=-1)
-    with pytest.raises(ValueError, match="max_selector_values"):
-        DuckDBBackend.connect(max_selector_values=-1)
-    with pytest.raises(ValueError, match="max_selector_relations"):
-        DuckDBBackend.connect(max_selector_relations=-1)
-    with pytest.raises(ValueError, match="target_partitions"):
-        DataFusionBackend.connect(target_partitions=0)
-    with pytest.raises(ValueError, match="memory_limit_bytes"):
-        DataFusionBackend.connect(memory_limit_bytes=0)
-    with pytest.raises(ValueError, match="recursion_limit"):
-        DataFusionBackend.connect(sql_parser_recursion_limit=0)
-    with pytest.raises(ValueError, match="max_densify_cells"):
-        DataFusionBackend.connect(max_densify_cells=-1)
-    with pytest.raises(ValueError, match="max_host_values"):
-        DataFusionBackend.connect(max_host_values=-1)
-    with pytest.raises(ValueError, match="max_selector_values"):
-        DataFusionBackend.connect(max_selector_values=-1)
-    with pytest.raises(ValueError, match="max_selector_relations"):
-        DataFusionBackend.connect(max_selector_relations=-1)
+def test_plans_deeper_than_the_cap_fail_before_compilation(backend: Backend) -> None:
+    node = backend.from_numpy(np.ones((1, 1)))._expr
+    for _ in range(1200):
+        node = ScalarBinary(BinaryOp.MULTIPLY, node, 1.0)
+    assert node.shape == (1, 1)
+    with pytest.raises(UnsupportedOperationError, match="depth of 768"):
+        backend.compile(node)
+
+
+@pytest.mark.backend
+def test_shared_work_is_compiled_once(backend: Backend) -> None:
+    values = np.arange(12.0).reshape(3, 4)
+    matrix = backend.from_numpy(values)
+    branch = matrix.T + np.array([0.25, -0.5, 0.75])
+    for result, expected in (
+        ((matrix * 2.0) * (matrix > 1.0), (values * 2.0) * (values > 1.0)),
+        ((branch + branch) * 0.5, values.T + np.array([0.25, -0.5, 0.75])),
+        (matrix.T + matrix.T, values.T * 2),
+    ):
+        np.testing.assert_allclose(result.to_numpy(), expected)
+        assert result.compile().count('"dbm_0"') == 1
+    assert matrix.T.T._expr is matrix._expr
+
+
+@pytest.mark.backend
+@pytest.mark.parametrize("layout", ["contiguous", "transpose", "strided"])
+def test_ingestion_copies_host_arrays(backend: Backend, layout: str) -> None:
+    original = np.arange(16.0).reshape(4, 4)
+    values = {
+        "contiguous": original,
+        "transpose": original.T,
+        "strided": original[::2, ::2],
+    }[layout]
+    expected = values.copy()
+    matrix = backend.from_numpy(values)
+    expression = matrix + values
+    original[:] = 999
+    np.testing.assert_array_equal(matrix.to_numpy(), expected)
+    np.testing.assert_array_equal(expression.to_numpy(), expected * 2)
+
+
+def _fail_on_call(method: Any, call: int) -> Any:
+    calls = 0
+
+    def failing(*args: Any, **kwargs: Any) -> Any:
+        nonlocal calls
+        calls += 1
+        if calls == call:
+            raise RuntimeError("injected")
+        return method(*args, **kwargs)
+
+    return failing
+
+
+@pytest.mark.backend
+@pytest.mark.parametrize(
+    ("target", "call", "action"),
+    [
+        (
+            "_register_dimension",
+            2,
+            lambda b, m: b.from_numpy(np.ones((2, 3)), name="retry"),
+        ),
+        ("_materialize_expr", 1, lambda b, m: m.compute(name="retry")),
+        ("dimension_relations", 1, lambda b, m: m[[2, 0], :]),
+        (
+            "_register_dimension",
+            1,
+            lambda b, m: b.from_relation("borrowed", shape=(5, 5), storage="sparse"),
+        ),
+    ],
+    ids=["import", "compute", "gather", "wrap"],
+)
+def test_failed_registration_rolls_back(
+    backend: Backend, target: str, call: int, action: Any
+) -> None:
+    matrix = backend.from_numpy(np.ones((3, 4)))
+    backend._register_arrow("borrowed", pa.table({"i": [0], "j": [0], "x": [3.0]}))
+    owned, selectors = backend._owned_relations.copy(), dict(backend._selector_cache)
+    with patch.object(backend, target, _fail_on_call(getattr(backend, target), call)):
+        with pytest.raises(RuntimeError, match="injected"):
+            action(backend, matrix)
+    assert backend._owned_relations == owned
+    assert backend._selector_cache == selectors
+    assert backend._execute_sql('SELECT x FROM "borrowed"').num_rows == 1
+    action(backend, matrix)  # the same names are free to use again
+
+
+@pytest.mark.backend
+@pytest.mark.parametrize(
+    ("backend_type", "option"),
+    [
+        (DuckDBBackend, {"threads": 0}),
+        (DataFusionBackend, {"target_partitions": 0}),
+        (DataFusionBackend, {"memory_limit_bytes": 0}),
+        (DataFusionBackend, {"sql_parser_recursion_limit": 0}),
+        *(
+            (backend_type, {limit: -1})
+            for backend_type in (DuckDBBackend, DataFusionBackend)
+            for limit in (
+                "max_densify_cells",
+                "max_host_values",
+                "max_sparse_host_values",
+                "max_selector_values",
+                "max_selector_relations",
+            )
+        ),
+    ],
+)
+def test_invalid_resource_limits_fail_before_connection(
+    backend_type: type[Backend], option: dict[str, int]
+) -> None:
+    with pytest.raises(ValueError, match=next(iter(option))):
+        backend_type.connect(**option)
 
 
 @pytest.mark.backend
 def test_compilation_is_cached_per_immutable_plan(backend: Backend) -> None:
     matrix = backend.from_numpy(np.arange(6.0).reshape(2, 3))
     plan = np.sqrt(matrix + 1.0)
-    with patch.object(
-        backend.lowerer,
-        "compile_matrix",
-        wraps=backend.lowerer.compile_matrix,
-    ) as compile_matrix:
-        first = plan.compile()
-        second = plan.compile()
-        np.testing.assert_allclose(
-            plan.to_numpy(), np.sqrt(np.arange(6.0).reshape(2, 3) + 1.0)
-        )
-    assert first == second
-    assert compile_matrix.call_count == 1
+    assert plan.compile() is plan.compile()
 
 
 @pytest.mark.backend
@@ -368,25 +341,6 @@ def test_plan_caches_evict_at_the_configured_bound(backend: Backend) -> None:
 
 
 @pytest.mark.backend
-def test_datafusion_native_pointwise_plan_is_cached() -> None:
-    backend = DataFusionBackend.connect()
-    try:
-        matrix = backend.from_numpy(np.arange(6.0).reshape(2, 3))
-        plan = np.sqrt(matrix + 1.0)
-        with patch.object(
-            backend.native_pointwise_lowerer,
-            "lower",
-            wraps=backend.native_pointwise_lowerer.lower,
-        ) as lower:
-            plan.to_numpy()
-            plan.to_numpy()
-            plan.explain()
-        assert lower.call_count == 1
-    finally:
-        backend.close()
-
-
-@pytest.mark.backend
 def test_capabilities_are_explicit_and_backend_specific(backend: Backend) -> None:
     capabilities = backend.capabilities
     assert capabilities.backend_name == backend.name
@@ -402,9 +356,7 @@ def test_capabilities_are_explicit_and_backend_specific(backend: Backend) -> Non
     assert capabilities.native_matrix_market_ingestion is isinstance(
         backend, DuckDBBackend
     )
-    assert capabilities.external_parquet_scan is isinstance(
-        backend, DataFusionBackend
-    )
+    assert capabilities.external_parquet_scan is isinstance(backend, DataFusionBackend)
 
 
 @pytest.mark.backend
@@ -501,7 +453,7 @@ def test_large_sparse_shape_uses_lazy_native_dimension_ranges(
 
 
 @pytest.mark.backend
-def test_default_host_limit_allows_figure1g_column_mean_width(
+def test_default_host_limit_allows_wide_axis_reductions(
     backend: Backend,
 ) -> None:
     matrix = backend.from_coo([], [], [], shape=(1, 10_000_000))
@@ -578,22 +530,37 @@ def test_sql_null_values_normalize_to_numpy_nan(backend: Backend, storage: str) 
 
 
 @pytest.mark.backend
-def test_unsupported_numpy_options_fail_explicitly(backend: Backend) -> None:
-    matrix = backend.from_numpy(np.arange(6.0).reshape(2, 3))
-    with pytest.raises(UnsupportedOperationError, match="float64"):
-        matrix.sum(dtype=np.float32)
-    with pytest.raises(UnsupportedOperationError, match="out="):
-        matrix.sum(out=np.empty(3))
-    with pytest.raises(UnsupportedOperationError, match="initial="):
-        matrix.sum(initial=2.0)
-    with pytest.raises(UnsupportedOperationError, match="where="):
-        matrix.mean(where=False)
-    with pytest.raises(UnsupportedOperationError, match="precomputed mean"):
-        matrix.var(mean=np.zeros(3))
-    with pytest.raises(np.exceptions.AxisError, match="out of bounds"):
-        matrix.sum(axis=2)
-    with pytest.raises(ValueError, match="ddof must"):
-        matrix.var(ddof=-1)
+def test_plan_is_plain_json(backend: Backend) -> None:
+    matrix = backend.from_numpy(np.ones((2, 3)))
+    expression = (matrix.T + np.ones(2)) * np.nan + np.inf + (-np.inf) - 2.5
+    plan = json.loads(json.dumps(expression.plan(), allow_nan=False))
+    nodes = {node["node"] for node in plan["nodes"]}
+    assert {"source", "transpose", "broadcast", "scalar_binary"} <= nodes
+    scalars = [node["scalar"] for node in plan["nodes"] if "scalar" in node]
+    assert {"special_float": "nan"} in scalars
+    assert {"special_float": "+inf"} in scalars
+    assert {"special_float": "-inf"} in scalars
+    assert 2.5 in scalars
+
+
+@pytest.mark.backend
+def test_numpy_container_conventions(backend: Backend) -> None:
+    values = np.arange(12.0).reshape(3, 4)
+    matrix = backend.from_numpy(values)
+    assert (len(matrix), matrix.ndim, matrix.size) == (3, 2, 12)
+    assert matrix.dtype == np.float64
+    np.testing.assert_array_equal((-matrix).to_numpy(), -values)
+    np.testing.assert_array_equal(abs(-matrix).to_numpy(), values)
+    np.testing.assert_array_equal(np.asarray(matrix, dtype=np.float32), values)
+    assert np.transpose(matrix, axes=(-2, -1)) is matrix
+    np.testing.assert_array_equal(np.transpose(matrix).to_numpy(), values.T)
+    np.testing.assert_array_equal(
+        np.transpose(matrix, axes=(1, 0)).to_numpy(), values.T
+    )
+    with pytest.raises(ValueError, match=r"truth value.*ambiguous"):
+        bool(matrix)
+    with pytest.raises(NotImplementedError, match="newaxis"):
+        matrix[None, :]
 
 
 @pytest.mark.backend

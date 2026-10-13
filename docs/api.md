@@ -75,6 +75,8 @@ Supported NumPy ufuncs include:
 Math functions also have matrix methods. `asin`, `acos` and `atan` are aliases.
 Real-domain errors such as `sqrt(-1)` and `arcsin(2)` produce NaN. Eager NumPy
 warning behavior is not reproduced when a lazy expression is built.
+`expm1` and `log1p` are emulated in SQL; near small inputs their relative
+error can reach about 1e-11 rather than NumPy's last-bit accuracy.
 
 One- and two-dimensional NumPy arrays, lists and tuples are uploaded as
 operands. Raw SciPy sparse operands must first pass through `from_scipy()`.

@@ -76,8 +76,7 @@ def _read_header(stream: _BinaryHeaderStream) -> MatrixMarketHeader:
         raise ValueError(f"Matrix Market object must be 'matrix', got {object_kind!r}")
     if layout != "coordinate":
         raise ValueError(
-            "only coordinate-format Matrix Market inputs are supported; "
-            f"got {layout!r}"
+            f"only coordinate-format Matrix Market inputs are supported; got {layout!r}"
         )
     if field not in {"real", "integer", "pattern"}:
         if field == "complex":

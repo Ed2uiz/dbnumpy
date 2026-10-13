@@ -91,8 +91,7 @@ def main() -> None:
 
     result = {
         "versions": {
-            package: version(package)
-            for package in ("dbnumpy", "duckdb", "datafusion")
+            package: version(package) for package in ("dbnumpy", "duckdb", "datafusion")
         },
         "repeats": args.repeats,
         "results": [

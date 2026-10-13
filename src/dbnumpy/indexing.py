@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from operator import index
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self, SupportsFloat, cast
 
 import numpy as np
 
@@ -15,7 +15,6 @@ from dbnumpy.exceptions import (
 )
 from dbnumpy.ir import (
     BinaryOp,
-    Broadcast,
     ElementwiseBinary,
     Gather,
     MatrixExpr,
@@ -166,52 +165,16 @@ class _LazyRankedResult:
             return NotImplemented
         if any(key != "out" for key in kwargs):
             return NotImplemented
-        unary = {
-            np.negative: UnaryOp.NEGATIVE,
-            np.absolute: UnaryOp.ABSOLUTE,
-            np.sqrt: UnaryOp.SQRT,
-            np.exp: UnaryOp.EXP,
-            np.expm1: UnaryOp.EXPM1,
-            np.log: UnaryOp.LOG,
-            np.log1p: UnaryOp.LOG1P,
-            np.sin: UnaryOp.SIN,
-            np.cos: UnaryOp.COS,
-            np.tan: UnaryOp.TAN,
-            np.floor: UnaryOp.FLOOR,
-            np.ceil: UnaryOp.CEIL,
-            np.sign: UnaryOp.SIGN,
-            np.trunc: UnaryOp.TRUNC,
-            np.isnan: UnaryOp.ISNAN,
-            np.log2: UnaryOp.LOG2,
-            np.log10: UnaryOp.LOG10,
-            np.sinh: UnaryOp.SINH,
-            np.cosh: UnaryOp.COSH,
-            np.tanh: UnaryOp.TANH,
-            np.arcsin: UnaryOp.ARCSIN,
-            np.arccos: UnaryOp.ARCCOS,
-            np.arctan: UnaryOp.ARCTAN,
-        }
-        if ufunc in unary and len(inputs) == 1:
-            return self._unary(unary[ufunc])
-        binary = {
-            np.add: BinaryOp.ADD,
-            np.subtract: BinaryOp.SUBTRACT,
-            np.multiply: BinaryOp.MULTIPLY,
-            np.true_divide: BinaryOp.TRUE_DIVIDE,
-            np.power: BinaryOp.POWER,
-            np.greater: BinaryOp.GREATER,
-            np.greater_equal: BinaryOp.GREATER_EQUAL,
-            np.less: BinaryOp.LESS,
-            np.less_equal: BinaryOp.LESS_EQUAL,
-            np.equal: BinaryOp.EQUAL,
-            np.not_equal: BinaryOp.NOT_EQUAL,
-        }
-        if ufunc in binary and len(inputs) == 2:
+        from dbnumpy.matrix import BINARY_UFUNCS, UNARY_UFUNCS
+
+        if ufunc in UNARY_UFUNCS and len(inputs) == 1:
+            return self._unary(UNARY_UFUNCS[ufunc])
+        if ufunc in BINARY_UFUNCS and len(inputs) == 2:
             left, right = inputs
             if left is self:
-                return self._binary(right, binary[ufunc])
+                return self._binary(right, BINARY_UFUNCS[ufunc])
             if right is self:
-                return self._binary(left, binary[ufunc], reverse=True)
+                return self._binary(left, BINARY_UFUNCS[ufunc], reverse=True)
         return NotImplemented
 
     def __array_function__(
@@ -445,7 +408,7 @@ class DBVector(_LazyRankedResult):
                     raise BackendMismatchError(
                         "vector operands belong to different backend instances"
                     )
-                if self.shape != other.shape:
+                if self.shape != other.shape and 1 not in (self.size, other.size):
                     raise ValueError(
                         f"vector operands must have equal shapes; got {self.shape} and "
                         f"{other.shape}"
@@ -455,6 +418,9 @@ class DBVector(_LazyRankedResult):
                     other_expr = Transpose(other_expr)
                 left, right = (
                     (other_expr, self._expr) if reverse else (self._expr, other_expr)
+                )
+                left, right = self._as_matrix()._broadcast_pair(
+                    left, right, op=operation
                 )
                 expr: MatrixExpr = ElementwiseBinary(operation, left, right)
             elif isinstance(other, DBScalar):
@@ -498,7 +464,9 @@ class DBVector(_LazyRankedResult):
                     raise ValueError("vector operands may have at most two dimensions")
             elif np.isscalar(other) and not isinstance(other, (str, bytes, complex)):
                 scalar = (
-                    bool(other) if isinstance(other, (bool, np.bool_)) else float(other)
+                    bool(other)
+                    if isinstance(other, (bool, np.bool_))
+                    else float(cast(SupportsFloat, other))
                 )
                 expr = ScalarBinary(operation, self._expr, scalar, reverse=reverse)
             else:
@@ -610,7 +578,9 @@ class DBScalar(_LazyRankedResult):
                 raise ValueError("scalar operands may have at most two dimensions")
             elif np.isscalar(other) and not isinstance(other, (str, bytes, complex)):
                 scalar = (
-                    bool(other) if isinstance(other, (bool, np.bool_)) else float(other)
+                    bool(other)
+                    if isinstance(other, (bool, np.bool_))
+                    else float(cast(SupportsFloat, other))
                 )
                 expr = ScalarBinary(operation, self._expr, scalar, reverse=reverse)
             else:
@@ -627,9 +597,7 @@ class DBScalar(_LazyRankedResult):
         )
 
 
-def index_matrix(
-    matrix: DBArray[Any], key: Any
-) -> DBArray[Any] | DBVector | DBScalar:
+def index_matrix(matrix: DBArray[Any], key: Any) -> DBArray[Any] | DBVector | DBScalar:
     """Build a lazy, NumPy-shaped basic or one-axis advanced index plan."""
 
     with matrix.backend._registration_scope():
@@ -791,9 +759,7 @@ def _normalize_selector(
             "only integers, slices, ellipsis, and integer or Boolean arrays are valid"
         )
     if array.ndim != 1:
-        raise UnsupportedOperationError(
-            "advanced selectors must be one-dimensional in this indexing tranche"
-        )
+        raise UnsupportedOperationError("advanced selectors must be one-dimensional")
     if np.issubdtype(array.dtype, np.bool_):
         if len(array) not in (0, size):
             raise IndexError(
@@ -832,18 +798,6 @@ def _range_for_plan(selector: _Selector, size: int) -> _Range:
 
 def _is_identity_range(value: _Range, size: int) -> bool:
     return value == _Range(0, size, 1, size)
-
-
-def _broadcast_to(
-    backend: Backend, expr: MatrixExpr, target_shape: tuple[int, int]
-) -> MatrixExpr:
-    if expr.shape == target_shape:
-        return expr
-    backend.guard_shape_expansion(
-        target_shape[0] * target_shape[1], operation="lazy scalar broadcasting"
-    )
-    rows_relation, cols_relation = backend.dimension_relations(target_shape)
-    return Broadcast(expr, target_shape, rows_relation, cols_relation)
 
 
 def _validate_vector_axis(axis: int | None) -> None:

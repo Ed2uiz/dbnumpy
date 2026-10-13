@@ -54,6 +54,18 @@ def _copy_arrow_column[ScalarT: np.generic](
     return output
 
 
+def _positions(column: pa.ChunkedArray, size: int) -> np.ndarray[Any, Any]:
+    """Return coordinates as indices, rejecting values outside ``[0, size)``."""
+    positions: np.ndarray[Any, Any] = column.to_numpy(zero_copy_only=False).astype(
+        np.intp
+    )
+    if positions.size and (positions.min() < 0 or positions.max() >= size):
+        raise ValueError(
+            "relation contains coordinates outside the declared matrix shape"
+        )
+    return positions
+
+
 class Backend(ABC):
     """Resource-owning analytical backend.
 
@@ -142,9 +154,7 @@ class Backend(ABC):
         ):
             raise TypeError(f"dense matrix values must be numeric, got {array.dtype}")
         if np.issubdtype(array.dtype, np.complexfloating):
-            raise TypeError(
-                "complex matrix values are not supported by the V1 float64 IR"
-            )
+            raise TypeError("complex matrix values are not supported; use float64")
         rows, cols = array.shape
         self._guard_dense_input(rows * cols)
         if rows and cols:
@@ -193,7 +203,7 @@ class Backend(ABC):
         ):
             raise TypeError(f"COO data must be numeric, got {raw_x.dtype}")
         if np.issubdtype(raw_x.dtype, np.complexfloating):
-            raise TypeError("complex COO data are not supported by the V1 float64 IR")
+            raise TypeError("complex COO data are not supported; use float64")
         i = raw_i.astype(np.int64, copy=False)
         j = raw_j.astype(np.int64, copy=False)
         x = raw_x.astype(np.float64, copy=False)
@@ -321,8 +331,12 @@ class Backend(ABC):
         table = self._execute_matrix_expr(expr)
         output = np.zeros(expr.shape, dtype=np.float64)
         if table.num_rows:
-            i = table.column("i").to_numpy(zero_copy_only=False).astype(np.intp)
-            j = table.column("j").to_numpy(zero_copy_only=False).astype(np.intp)
+            i = _positions(table.column("i"), expr.shape[0])
+            j = _positions(table.column("j"), expr.shape[1])
+            seen = np.zeros(expr.shape, dtype=np.bool_)
+            seen[i, j] = True
+            if np.count_nonzero(seen) != len(i):
+                raise ValueError("relation contains duplicate matrix coordinates")
             x = table.column("x").to_numpy(zero_copy_only=False).astype(np.float64)
             output[i, j] = x
         return output
@@ -444,9 +458,7 @@ class Backend(ABC):
         output = np.zeros(length, dtype=np.float64)
         if table.num_rows:
             coordinate = "i" if varying_axis == 0 else "j"
-            positions = (
-                table.column(coordinate).to_numpy(zero_copy_only=False).astype(np.intp)
-            )
+            positions = _positions(table.column(coordinate), length)
             values = table.column("x").to_numpy(zero_copy_only=False).astype(np.float64)
             output[positions] = values
         return output
@@ -499,7 +511,7 @@ class Backend(ABC):
             dtype=dtype,
         )
         if table.num_rows:
-            index = table.column("index").to_numpy(zero_copy_only=False).astype(np.intp)
+            index = _positions(table.column("index"), lowered.output_length)
             values = table.column("value").to_numpy(zero_copy_only=False)
             output[index] = values
         return output

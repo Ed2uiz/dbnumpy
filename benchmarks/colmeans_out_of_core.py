@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # ruff: noqa: E501
-"""Reproduce Figure 1g column means with honest out-of-core pipelines.
+"""Benchmark out-of-core column means across matrix widths.
+
+This reproduces Figure 1g of the dbverse paper (matrix column means), whose
+fixture sizes and densities ("sp95", "sp99") are referred to as Figure 1g below.
 
 Preparation is deliberately excluded from the measured operation.  Each case
 runs in a fresh spawned process and measures one cold call followed by five
@@ -160,9 +163,7 @@ def swap_snapshot() -> dict[str, int] | None:
     if platform.system() != "Darwin":
         return None
     try:
-        output = subprocess.check_output(
-            ["sysctl", "-n", "vm.swapusage"], text=True
-        )
+        output = subprocess.check_output(["sysctl", "-n", "vm.swapusage"], text=True)
     except (OSError, subprocess.SubprocessError):
         return None
     unit_bytes = {"K": 1024, "M": 1024**2, "G": 1024**3, "T": 1024**4}
@@ -249,9 +250,7 @@ def _validate_result(values: Any, dataset: Dataset) -> dict[str, Any]:
 
     array = np.asarray(values, dtype=np.float64).reshape(-1)
     if array.size != dataset.spec.columns:
-        raise ValueError(
-            f"column mean length {array.size} != {dataset.spec.columns}"
-        )
+        raise ValueError(f"column mean length {array.size} != {dataset.spec.columns}")
     error = float(np.max(np.abs(array - dataset.spec.expected_mean)))
     if not np.isfinite(error) or error > 1e-12:
         raise ValueError(
@@ -342,13 +341,11 @@ def _prepare_datafusion_parquet(
 
     started = time.perf_counter()
     config = SessionConfig().with_target_partitions(threads)
-    runtime = RuntimeEnvBuilder().with_disk_manager_os().with_fair_spill_pool(
-        memory_bytes
+    runtime = (
+        RuntimeEnvBuilder().with_disk_manager_os().with_fair_spill_pool(memory_bytes)
     )
     context = SessionContext(config=config, runtime=runtime)
-    schema = pa.schema(
-        [("i", pa.int64()), ("j", pa.int64()), ("x", pa.float64())]
-    )
+    schema = pa.schema([("i", pa.int64()), ("j", pa.int64()), ("x", pa.float64())])
     csv_options: dict[str, Any] = dict(
         has_header=False,
         delimiter=" ",
@@ -377,8 +374,9 @@ def _prepare_datafusion_parquet(
     for other in validation_frames[1:]:
         validation_frame = validation_frame.union(other)
     context.register_table("figure1g_canonical_validation", validation_frame)
-    validation = context.sql(
-        f"""
+    validation = (
+        context.sql(
+            f"""
         SELECT count(*) AS entries,
                min(i) AS min_i, max(i) AS max_i,
                min(j) AS min_j, max(j) AS max_j,
@@ -388,7 +386,10 @@ def _prepare_datafusion_parquet(
                          OR x <> 1.0 OR x IS NULL THEN 1 ELSE 0 END) AS invalid
         FROM figure1g_canonical_validation
         """
-    ).to_arrow_table().to_pylist()[0]
+        )
+        .to_arrow_table()
+        .to_pylist()[0]
+    )
     if (
         validation["entries"] != nnz
         or validation["invalid"] != 0
@@ -876,10 +877,15 @@ PLOT_COLORS = dict(
 )
 
 
-def _log_scale(value: float, low: float, high: float, start: float, span: float) -> float:
-    return start + (math.log10(value) - math.log10(low)) / (
-        math.log10(high) - math.log10(low)
-    ) * span
+def _log_scale(
+    value: float, low: float, high: float, start: float, span: float
+) -> float:
+    return (
+        start
+        + (math.log10(value) - math.log10(low))
+        / (math.log10(high) - math.log10(low))
+        * span
+    )
 
 
 def _format_nnz(value: float) -> str:
@@ -900,7 +906,9 @@ def _format_seconds(value: float) -> str:
 def _log_ticks(low: float, high: float) -> list[float]:
     ticks = [
         10.0**exponent
-        for exponent in range(math.ceil(math.log10(low)), math.floor(math.log10(high)) + 1)
+        for exponent in range(
+            math.ceil(math.log10(low)), math.floor(math.log10(high)) + 1
+        )
     ]
     if len(ticks) < 2:
         ticks = [low, high]
@@ -941,8 +949,9 @@ def plot_results(
     selected = [row for row in rows if row["backend"] in backends and row["nnz"] > 0]
     if not selected:
         return
-    x_min, x_max = min(float(row["nnz"]) for row in selected), max(
-        float(row["nnz"]) for row in selected
+    x_min, x_max = (
+        min(float(row["nnz"]) for row in selected),
+        max(float(row["nnz"]) for row in selected),
     )
     if x_min == x_max:
         x_min /= 1.5
@@ -964,7 +973,9 @@ def plot_results(
     scipy_rows = [row for row in selected if row["backend"] == "scipy-host"]
     if scipy_rows:
         largest = max(scipy_rows, key=lambda row: row["nnz"])
-        bounds = scipy_memory_lower_bounds(int(largest["nnz"]), int(largest.get("columns", 0)))
+        bounds = scipy_memory_lower_bounds(
+            int(largest["nnz"]), int(largest.get("columns", 0))
+        )
         parts.append(
             f'<text x="490" y="68" text-anchor="middle" font-family="sans-serif" font-size="10.5">SciPy payload minimum at {_format_nnz(float(largest["nnz"]))} NNZ: COO {bounds["scipy_mmread_coo_lower_bound_bytes"] / 1e9:.2f} GB; CSC {bounds["scipy_csc_lower_bound_bytes"] / 1e9:.2f} GB, before overhead</text>'
         )
@@ -975,7 +986,9 @@ def plot_results(
             for row in selected
             if row.get("status") == "success" and float(row.get(metric, 0)) > 0
         ]
-        y_min, y_max = (min(timings) / 1.8, max(timings) * 1.8) if timings else (0.01, 1.0)
+        y_min, y_max = (
+            (min(timings) / 1.8, max(timings) * 1.8) if timings else (0.01, 1.0)
+        )
         if math.isclose(y_min, y_max):
             y_min /= 2
             y_max *= 2
@@ -1005,19 +1018,28 @@ def plot_results(
         endpoints: dict[str, tuple[float, float]] = {}
         for backend in backends:
             series = sorted(
-                (row for row in selected if row["backend"] == backend and row.get("status") == "success" and float(row.get(metric, 0)) > 0),
+                (
+                    row
+                    for row in selected
+                    if row["backend"] == backend
+                    and row.get("status") == "success"
+                    and float(row.get(metric, 0)) > 0
+                ),
                 key=lambda row: row["nnz"],
             )
             points = [
                 (
                     _log_scale(float(row["nnz"]), x_min, x_max, left, plot_width),
-                    bottom - _log_scale(float(row[metric]), y_min, y_max, 0, plot_height),
+                    bottom
+                    - _log_scale(float(row[metric]), y_min, y_max, 0, plot_height),
                 )
                 for row in series
             ]
             if points:
                 coordinates = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
-                parts.append(f'<polyline points="{coordinates}" fill="none" stroke="{PLOT_COLORS[backend]}" stroke-width="2.4"/>')
+                parts.append(
+                    f'<polyline points="{coordinates}" fill="none" stroke="{PLOT_COLORS[backend]}" stroke-width="2.4"/>'
+                )
                 parts.extend(
                     f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{PLOT_COLORS[backend]}" stroke="white"><title>{escape(BACKEND_LABELS[backend])}</title></circle>'
                     for x, y in points
@@ -1058,14 +1080,18 @@ def plot_preparation_results(
     selected = [row for row in rows if row["backend"] in backends and row["nnz"] > 0]
     if not selected:
         return
-    x_min, x_max = min(float(row["nnz"]) for row in selected), max(float(row["nnz"]) for row in selected)
+    x_min, x_max = (
+        min(float(row["nnz"]) for row in selected),
+        max(float(row["nnz"]) for row in selected),
+    )
     if x_min == x_max:
         x_min /= 1.5
         x_max *= 1.5
     measured = [
         row
         for row in selected
-        if not row.get("preparation_reused") and float(row.get("preparation_sec", 0)) > 0
+        if not row.get("preparation_reused")
+        and float(row.get("preparation_sec", 0)) > 0
     ]
     timings = [float(row["preparation_sec"]) for row in measured]
     y_min, y_max = (min(timings) / 1.8, max(timings) * 1.8) if timings else (0.01, 1.0)
@@ -1104,18 +1130,29 @@ def plot_preparation_results(
         )
     endpoints: dict[str, tuple[float, float]] = {}
     for backend in backends:
-        series = sorted((row for row in measured if row["backend"] == backend), key=lambda row: row["nnz"])
+        series = sorted(
+            (row for row in measured if row["backend"] == backend),
+            key=lambda row: row["nnz"],
+        )
         points = [
             (
                 _log_scale(float(row["nnz"]), x_min, x_max, left, plot_width),
-                bottom - _log_scale(float(row["preparation_sec"]), y_min, y_max, 0, plot_height),
+                bottom
+                - _log_scale(
+                    float(row["preparation_sec"]), y_min, y_max, 0, plot_height
+                ),
             )
             for row in series
         ]
         if points:
             coordinates = " ".join(f"{x:.1f},{y:.1f}" for x, y in points)
-            parts.append(f'<polyline points="{coordinates}" fill="none" stroke="{PLOT_COLORS[backend]}" stroke-width="2.4"/>')
-            parts.extend(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{PLOT_COLORS[backend]}" stroke="white"/>' for x, y in points)
+            parts.append(
+                f'<polyline points="{coordinates}" fill="none" stroke="{PLOT_COLORS[backend]}" stroke-width="2.4"/>'
+            )
+            parts.extend(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4" fill="{PLOT_COLORS[backend]}" stroke="white"/>'
+                for x, y in points
+            )
             endpoints[backend] = points[-1]
     label_y = _staggered_labels(
         {backend: point[1] for backend, point in endpoints.items()},
@@ -1132,14 +1169,38 @@ def plot_preparation_results(
         )
     note_groups: list[tuple[str, str, int]] = []
     for backend in backends:
-        reused = [row for row in selected if row["backend"] == backend and row.get("preparation_reused")]
-        failures = [row for row in selected if row["backend"] == backend and row.get("status") != "success" and not row.get("preparation_reused")]
+        reused = [
+            row
+            for row in selected
+            if row["backend"] == backend and row.get("preparation_reused")
+        ]
+        failures = [
+            row
+            for row in selected
+            if row["backend"] == backend
+            and row.get("status") != "success"
+            and not row.get("preparation_reused")
+        ]
         if reused:
-            note_groups.append((backend, f"{len(reused)} reused artifact case(s); preparation not retimed", max(int(row["nnz"]) for row in reused)))
+            note_groups.append(
+                (
+                    backend,
+                    f"{len(reused)} reused artifact case(s); preparation not retimed",
+                    max(int(row["nnz"]) for row in reused),
+                )
+            )
         if failures:
-            note_groups.append((backend, f"{len(failures)} case(s) without preparation timing: {failures[-1]['status']}", max(int(row["nnz"]) for row in failures)))
+            note_groups.append(
+                (
+                    backend,
+                    f"{len(failures)} case(s) without preparation timing: {failures[-1]['status']}",
+                    max(int(row["nnz"]) for row in failures),
+                )
+            )
     if note_groups:
-        parts.append('<text x="82" y="425" font-family="sans-serif" font-size="10" font-weight="bold">Not plotted as preparation measurements:</text>')
+        parts.append(
+            '<text x="82" y="425" font-family="sans-serif" font-size="10" font-weight="bold">Not plotted as preparation measurements:</text>'
+        )
     for index, (backend, note, largest_nnz) in enumerate(note_groups):
         parts.append(
             f'<text x="82" y="{442 + index * 13}" font-family="sans-serif" font-size="9.5" fill="{PLOT_COLORS[backend]}">{escape(BACKEND_LABELS[backend])} — {escape(note)}; through {_format_nnz(float(largest_nnz))} NNZ</text>'
@@ -1226,8 +1287,7 @@ def main(argv: list[str] | None = None) -> int:
             and args.duckdb_ingest_memory_gb <= 0
         )
         or (
-            args.emergency_free_swap_gb is not None
-            and args.emergency_free_swap_gb <= 0
+            args.emergency_free_swap_gb is not None and args.emergency_free_swap_gb <= 0
         )
         or args.threads < 1
         or args.timeout_sec <= 0
@@ -1342,9 +1402,7 @@ def main(argv: list[str] | None = None) -> int:
             }
             if backend == "scipy-host":
                 row.update(
-                    scipy_memory_lower_bounds(
-                        dataset.spec.nnz, dataset.spec.columns
-                    )
+                    scipy_memory_lower_bounds(dataset.spec.nnz, dataset.spec.columns)
                 )
             case = {
                 "row": row,
