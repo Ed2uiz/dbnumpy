@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from numbers import Real
 from operator import index
-from typing import TYPE_CHECKING, Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, SupportsFloat, cast
 
 import numpy as np
 
@@ -781,7 +781,7 @@ class DBArray[ScalarT: np.generic]:
                 if isinstance(other, (bool, np.bool_)):
                     scalar = bool(other)
                 else:
-                    scalar = float(other)
+                    scalar = float(cast(SupportsFloat, other))
                 expr = ScalarBinary(op, self._expr, scalar, reverse=reverse)
             else:
                 msg = f"unsupported operand type for DBArray: {type(other).__name__}"

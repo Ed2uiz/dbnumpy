@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from operator import index
-from typing import TYPE_CHECKING, Any, Literal, Self
+from typing import TYPE_CHECKING, Any, Literal, Self, SupportsFloat, cast
 
 import numpy as np
 
@@ -464,7 +464,9 @@ class DBVector(_LazyRankedResult):
                     raise ValueError("vector operands may have at most two dimensions")
             elif np.isscalar(other) and not isinstance(other, (str, bytes, complex)):
                 scalar = (
-                    bool(other) if isinstance(other, (bool, np.bool_)) else float(other)
+                    bool(other)
+                    if isinstance(other, (bool, np.bool_))
+                    else float(cast(SupportsFloat, other))
                 )
                 expr = ScalarBinary(operation, self._expr, scalar, reverse=reverse)
             else:
@@ -576,7 +578,9 @@ class DBScalar(_LazyRankedResult):
                 raise ValueError("scalar operands may have at most two dimensions")
             elif np.isscalar(other) and not isinstance(other, (str, bytes, complex)):
                 scalar = (
-                    bool(other) if isinstance(other, (bool, np.bool_)) else float(other)
+                    bool(other)
+                    if isinstance(other, (bool, np.bool_))
+                    else float(cast(SupportsFloat, other))
                 )
                 expr = ScalarBinary(operation, self._expr, scalar, reverse=reverse)
             else:
