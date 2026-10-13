@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # ruff: noqa: E501
-"""Reproduce Figure 1g column means with honest out-of-core pipelines.
+"""Benchmark out-of-core column means across matrix widths.
+
+This reproduces Figure 1g of the dbverse paper (matrix column means), whose
+fixture sizes and densities ("sp95", "sp99") are referred to as Figure 1g below.
 
 Preparation is deliberately excluded from the measured operation.  Each case
 runs in a fresh spawned process and measures one cold call followed by five

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Stress Figure 1g column means under a small engine spill budget.
+"""Stress column means under a small engine spill budget.
+
+Inputs are the Figure 1g fixtures from colmeans_out_of_core.py, named after
+Figure 1g (matrix column means) of the dbverse paper.
 
 This runner consumes already-prepared canonical artifacts. It never parses MTX,
 constructs host coordinate arrays, rewrites the persistent DuckDB database, or
