@@ -871,7 +871,11 @@ class IbisLowerer:
                 factors = factors.aggregate(x=factors.x.sum().fill_null(0.0))
                 joined = values.cross_join(factors)
             else:
-                joined = values.left_join(factors, predicates)
+                # Keep the broadcast vector on the hash-build side when the
+                # engine has no source statistics. DataFusion otherwise keeps
+                # the entire coordinate matrix in memory. A right join still
+                # preserves every matrix coordinate, including missing factors.
+                joined = factors.right_join(values, predicates)
             factor_value = factors.x.fill_null(0.0)
             left, right = (
                 (values.x, factor_value)
