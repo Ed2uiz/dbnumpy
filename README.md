@@ -231,18 +231,23 @@ materialized = result.values if backend is None else result.values.compute()
 
 ![Single-cell preprocessing runtime including storing the normalized matrix](docs/assets/brain-native-compute.png)
 
-One run per point in WSL 2 with a 7.51 GiB RAM ceiling. Times exclude matrix preparation, export and validation.
-The runtime includes `compute()` to store the normalized matrix in the database.
+Median of three runs per point in WSL 2, each in a fresh process with a 7.51 GiB
+memory cap and no swap; the database engines get half of it. Runs of different
+methods never overlap. Times include `compute()` to store the normalized matrix in
+the database, and exclude matrix preparation, export and validation.
 × marks an out-of-memory failure.
 
-DuckDB completed 250,000 cells, including `compute()`, in 185 seconds. DataFusion
-completed 250,000 cells in 108 seconds using temporary Parquet storage. SciPy
-ran out of memory at 50,000 cells and above. These are preliminary measurements;
-successful runs passed checks of gene summaries, entry counts and sampled values.
+| Input cells | NumPy / SciPy | dbnumpy DuckDB 2.0 | dbnumpy DataFusion 54 |
+|---:|---:|---:|---:|
+| 5,000 | 2.0 s | 1.7 s | 2.2 s |
+| 10,000 | 4.2 s | 3.0 s | 2.3 s |
+| 25,000 | 15.4 s | 7.3 s | 6.3 s |
+| 50,000 | × | 14.3 s | 10.6 s |
+| 100,000 | × | 29.2 s | 21.1 s |
+| 250,000 | × | 79.1 s | 60.2 s |
 
-DataFusion was rerun at all six sizes using Linux temporary storage. The other
-paths show the earlier runs with Windows-mounted temporary storage; these
-are not controlled measurements of relative speed.
+All 45 completed runs passed checks of gene summaries, entry counts and sampled
+values.
 
 [Method and results](docs/guides/brain-native-compute.md) ·
 [Earlier PBMC benchmark](docs/guides/pbmc-benchmark.md)
