@@ -89,6 +89,7 @@ def _check_fixture(tmp_path):
                 size=size,
                 engine=engine,
                 engine_bytes=512 * 1024**2,
+                threads=1,
                 block=11,
             )
             benchmark.worker(trial)

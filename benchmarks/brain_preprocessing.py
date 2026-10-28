@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 from benchmarks.pbmc_memory_pressure import mark, read_counters  # noqa: E402
 from benchmarks.pbmc_preprocessing import (  # noqa: E402
     ENGINES,
+    THREAD_VARS,
     sha256,
     write_json,
 )
@@ -412,6 +413,9 @@ def worker(args):
     spill = (args.output / "spill").resolve()
     spill.mkdir()
     os.environ["TMPDIR"] = str(spill)
+    # One thread count for every engine; BLAS and Polars read it at import.
+    for variable in (*THREAD_VARS, "POLARS_MAX_THREADS"):
+        os.environ[variable] = str(args.threads)
     mark(args.output, "imports")
     import numpy as np
     from scipy import sparse
@@ -420,8 +424,6 @@ def worker(args):
 
     manifest = json.loads((args.data / "dataset.json").read_text())
     if args.engine != "scipy":
-        # Match DuckDB threads=1 and DataFusion target_partitions=1.
-        os.environ["POLARS_MAX_THREADS"] = "1"
         import dbnumpy as dnp
 
         __import__(args.engine)
@@ -445,7 +447,7 @@ def worker(args):
 
         backend = dnp.DuckDBBackend.connect(
             args.data / "counts.duckdb",
-            threads=1,
+            threads=args.threads,
             memory_limit=f"{args.engine_bytes}B",
             temp_directory=spill,
             max_sparse_host_values=2_000_000_000,
@@ -459,7 +461,7 @@ def worker(args):
     else:
         if args.engine == "datafusion":
             backend = dnp.DataFusionBackend.connect(
-                target_partitions=1,
+                target_partitions=args.threads,
                 memory_limit_bytes=args.engine_bytes,
                 temp_directory=spill,
                 max_sparse_host_values=2_000_000_000,
@@ -919,6 +921,7 @@ def main():
             if name == "worker":
                 p.add_argument("--engine", choices=(*ENGINES, "polars"), required=True)
                 p.add_argument("--engine-bytes", type=int, required=True)
+                p.add_argument("--threads", type=int, default=1)
     args = parser.parse_args()
     globals()[args.command.replace("-", "_")](args)
 
