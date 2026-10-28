@@ -16,6 +16,7 @@ from dbnumpy import (
     DBSparseArray,
     DensificationError,
     DuckDBBackend,
+    PolarsBackend,
     UnsupportedOperationError,
 )
 from dbnumpy.backends import Backend
@@ -58,9 +59,10 @@ def test_explain_exposes_engine_plan(backend: Backend) -> None:
     expression = (matrix + 1.0) * 2.0
     plan = expression.explain()
     assert len(plan) > 20
-    assert "PROJECTION" in plan.upper()
+    assert "PROJECT" in plan.upper()
     assert "JOIN" not in expression.compile().upper()
-    assert "SCAN" in plan.upper()
+    # Polars shows an in-memory table as DF rather than a scan.
+    assert ("DF [" if isinstance(backend, PolarsBackend) else "SCAN") in plan.upper()
 
 
 @pytest.mark.backend
@@ -80,8 +82,12 @@ def test_variance_explain_keeps_windowed_statistics_optimizer_visible(
     assert sql.count('FROM "dbm_0"') == 1
     assert "OVER (" in sql.upper()
     assert "CROSS JOIN" not in sql.upper()
-    assert "WINDOW" in plan
-    assert "SCAN" in plan
+    if isinstance(backend, PolarsBackend):
+        # Polars plans these windows as aggregates over one input table.
+        assert plan.count("DF [") == 1
+    else:
+        assert "WINDOW" in plan
+        assert "SCAN" in plan
     np.testing.assert_allclose(matrix.var(ddof=0.5), np.var(values, ddof=0.5))
 
 
@@ -356,7 +362,9 @@ def test_capabilities_are_explicit_and_backend_specific(backend: Backend) -> Non
     assert capabilities.native_matrix_market_ingestion is isinstance(
         backend, DuckDBBackend
     )
-    assert capabilities.external_parquet_scan is isinstance(backend, DataFusionBackend)
+    assert capabilities.external_parquet_scan is isinstance(
+        backend, (DataFusionBackend, PolarsBackend)
+    )
 
 
 @pytest.mark.backend
