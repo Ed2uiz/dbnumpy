@@ -80,7 +80,7 @@ def _check_fixture(tmp_path):
             np.testing.assert_allclose(
                 summary["gene_variance"], expected.var(axis=0, ddof=1), atol=1e-12
             )
-        for engine in benchmark.ENGINES:
+        for engine in (*benchmark.ENGINES, "polars"):
             output = tmp_path / f"{size}-{engine}"
             output.mkdir()
             trial = SimpleNamespace(

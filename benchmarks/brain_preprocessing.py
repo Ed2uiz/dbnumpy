@@ -420,6 +420,8 @@ def worker(args):
 
     manifest = json.loads((args.data / "dataset.json").read_text())
     if args.engine != "scipy":
+        # Match DuckDB threads=1 and DataFusion target_partitions=1.
+        os.environ["POLARS_MAX_THREADS"] = "1"
         import dbnumpy as dnp
 
         __import__(args.engine)
@@ -455,12 +457,19 @@ def worker(args):
             "benchmark_subset", shape=(args.size, manifest["genes"]), storage="sparse"
         )
     else:
-        backend = dnp.DataFusionBackend.connect(
-            target_partitions=1,
-            memory_limit_bytes=args.engine_bytes,
-            temp_directory=spill,
-            max_sparse_host_values=2_000_000_000,
-        )
+        if args.engine == "datafusion":
+            backend = dnp.DataFusionBackend.connect(
+                target_partitions=1,
+                memory_limit_bytes=args.engine_bytes,
+                temp_directory=spill,
+                max_sparse_host_values=2_000_000_000,
+            )
+        else:
+            # Polars has no memory limit; only the process cap applies.
+            backend = dnp.PolarsBackend.connect(
+                temp_directory=spill,
+                max_sparse_host_values=2_000_000_000,
+            )
         values = backend.from_parquet(
             [
                 args.data / part["file"]
@@ -908,7 +917,7 @@ def main():
             if name != "reference":
                 p.add_argument("--output", type=Path, required=True)
             if name == "worker":
-                p.add_argument("--engine", choices=ENGINES, required=True)
+                p.add_argument("--engine", choices=(*ENGINES, "polars"), required=True)
                 p.add_argument("--engine-bytes", type=int, required=True)
     args = parser.parse_args()
     globals()[args.command.replace("-", "_")](args)
