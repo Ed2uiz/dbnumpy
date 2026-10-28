@@ -107,9 +107,9 @@ DataFusion currently writes even small computed results to disk, which adds I/O.
 Its query operators can also spill intermediate data; that is separate from
 storing the completed matrix.
 
-For external Parquet input, dbnumpy disables DataFusion's file statistics
-collection when defining the scan. DataFusion 54 can otherwise replace NaN
-values with a finite constant because Parquet min/max statistics omit NaNs.
+For external Parquet input, dbnumpy requires DataFusion's file statistics
+collection to be off; `connect()` turns it off. DataFusion can otherwise replace
+NaN values with a finite constant because Parquet min/max statistics omit NaNs.
 The scan stays lazy, uses the backend's execution limits, and can still prune
 row groups. This protection may reduce statistics-based query optimizations.
 Computed files separately omit value-column statistics when written.

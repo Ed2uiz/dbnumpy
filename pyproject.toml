@@ -43,7 +43,7 @@ duckdb = [
   "duckdb>=1.5,<3",
 ]
 datafusion = [
-  "datafusion>=54,<55",
+  "datafusion>=55,<56",
 ]
 scipy = [
   "scipy>=1.15,<2",
@@ -54,7 +54,7 @@ docs = [
 ]
 dev = [
   "build>=1.2,<2",
-  "datafusion>=54,<55",
+  "datafusion>=55,<56",
   "duckdb>=1.5,<3",
   "mypy>=1.15,<3",
   "pre-commit>=4,<5",

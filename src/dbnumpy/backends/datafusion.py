@@ -99,6 +99,7 @@ class DataFusionBackend(Backend):
         config = (
             SessionConfig()
             .with_target_partitions(target_partitions)
+            .set("datafusion.execution.collect_statistics", "false")
             .set(
                 "datafusion.sql_parser.recursion_limit",
                 str(sql_parser_recursion_limit),
@@ -163,20 +164,26 @@ class DataFusionBackend(Backend):
             kind = StorageKind(storage)
             parquet_paths = self._validate_parquet_paths(paths)
 
-            from datafusion import SessionConfig, SessionContext, col
+            from datafusion import SessionContext, col
 
-            # DataFusion 54 replaces columns with min == max by a constant.
+            # DataFusion replaces columns with min == max by a constant, and
             # Parquet statistics exclude NaNs, so [NaN, 2] can become [2, 2].
-            # Define scans without file statistics in a separate context, then
-            # register their plans below. Execution still uses self.context and
-            # its runtime limits; caller-owned context settings remain unchanged.
-            reader = SessionContext(
-                SessionConfig().set("datafusion.execution.collect_statistics", "false")
+            # Scans use the settings of the context that runs them; connect()
+            # turns statistics off, and a caller-owned context must do the same.
+            # SHOW needs information_schema, so read a copy of the settings.
+            config = self.context.copied_config().with_information_schema(True)
+            setting = SessionContext(config).sql(
+                "SHOW datafusion.execution.collect_statistics"
             )
+            if setting.to_pydict()["value"] != ["false"]:
+                raise ValueError(
+                    "from_parquet() needs a context with "
+                    "datafusion.execution.collect_statistics set to false"
+                )
 
             frames = []
             for path in parquet_paths:
-                frame = reader.read_parquet(path)
+                frame = self.context.read_parquet(path)
                 self._validate_coordinate_schema(frame.schema(), path=path)
                 frames.append(
                     frame.select(
@@ -342,7 +349,7 @@ class DataFusionBackend(Backend):
         )
         try:
             # Parquet min/max statistics omit NaNs and cannot distinguish signed
-            # zeros. DataFusion 54 can use them to replace a value column with a
+            # zeros. DataFusion can use them to replace a value column with a
             # constant. Keep coordinate statistics, but require reading x values.
             options = ParquetWriterOptions(
                 column_specific_options={
