@@ -1,7 +1,7 @@
 <h1 align="center">dbnumpy</h1>
 
 <p align="center">
-  NumPy-style matrix operations in DuckDB and Apache DataFusion.
+  NumPy-style matrix operations in DuckDB, Apache DataFusion and Polars.
 </p>
 
 <p align="center">
@@ -38,7 +38,8 @@ python -m pip install --only-binary=:all: -e '.[duckdb,datafusion,scipy]'
 ```
 
 These commands work on Linux, macOS and WSL 2. Install just the `duckdb` or
-`datafusion` extra if you only need one engine.
+`datafusion` extra if you only need one engine. The experimental Polars
+backend uses the `polars` extra.
 
 ## Example
 
@@ -54,14 +55,15 @@ with dnp.DuckDBBackend.connect() as backend:
     print(y.to_numpy())  # run the calculation and collect the result
 ```
 
-Use `DataFusionBackend` to run the same operations in DataFusion.
-Both engines are checked against NumPy and SciPy in CI.
+Use `DataFusionBackend` or the experimental `PolarsBackend` to run the same
+operations in DataFusion or Polars. All three engines are checked against
+NumPy and SciPy in CI.
 
 ## Support
 
 | Area | Supported | Limits |
 |---|---|---|
-| Engines | DuckDB and DataFusion | File-loading options differ |
+| Engines | DuckDB, DataFusion and experimental Polars | File-loading options differ; Polars has no memory limit |
 | Arrays | Dense and sparse matrices, vectors and scalars | Float64; no higher-rank arrays or labels |
 | Operations | Arithmetic, broadcasting and selected NumPy functions | Partial API; may change during pre-alpha |
 | Indexing | Slices, transpose, repeated indices and one-axis Boolean selection | No assignment or full Boolean masks |
