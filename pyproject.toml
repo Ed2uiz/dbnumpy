@@ -45,6 +45,9 @@ duckdb = [
 datafusion = [
   "datafusion>=55,<56",
 ]
+polars = [
+  "polars>=2.1,<3",
+]
 scipy = [
   "scipy>=1.15,<2",
 ]
