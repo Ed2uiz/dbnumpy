@@ -250,3 +250,12 @@ def test_parquet_numeric_columns_are_normalized(tmp_path: Path) -> None:
         assert matrix.dtype == np.dtype(np.float64)
     finally:
         backend.close()
+
+
+def test_partitioned_joins_broadcast_large_selectors() -> None:
+    # A 200,000-row selector is above DataFusion's default 1 MB broadcast limit.
+    with DataFusionBackend.connect(target_partitions=4) as backend:
+        matrix = backend.from_numpy(np.ones((200_000, 2)))
+        plan = matrix[np.arange(200_000)[::-1], :].explain()
+    assert "mode=CollectLeft" in plan
+    assert "mode=Partitioned" not in plan

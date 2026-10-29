@@ -100,6 +100,17 @@ class DataFusionBackend(Backend):
             SessionConfig()
             .with_target_partitions(target_partitions)
             .set("datafusion.execution.collect_statistics", "false")
+            # Broadcast the small selector and scale-vector sides of joins. By
+            # default a selector above 1 MB is hash-repartitioned together with
+            # the large coordinate relation, shuffling it on every join.
+            .set(
+                "datafusion.optimizer.hash_join_single_partition_threshold",
+                str(32 * 1024**2),
+            )
+            .set(
+                "datafusion.optimizer.hash_join_single_partition_threshold_rows",
+                str(1_000_000),
+            )
             .set(
                 "datafusion.sql_parser.recursion_limit",
                 str(sql_parser_recursion_limit),
