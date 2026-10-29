@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from typing import cast
 
 import sqlglot
@@ -79,6 +80,51 @@ def _log_bases(node: sge.Expression) -> sge.Expression:
     return node
 
 
+def _constant(node: sge.Expression) -> float | None:
+    if isinstance(node, (sge.Paren, sge.Cast)):
+        return _constant(node.this)
+    if isinstance(node, sge.Neg):
+        value = _constant(node.this)
+        return None if value is None else -value
+    if isinstance(node, sge.Div):
+        # Ibis writes -0.0 as -(1.0) / CAST('inf' AS DOUBLE).
+        left, right = _constant(node.this), _constant(node.expression)
+        return None if left is None or not right else left / right
+    if isinstance(node, sge.Literal):
+        try:
+            return float(node.this)
+        except ValueError:
+            return None
+    return None
+
+
+def _is_zero(node: sge.Expression, *, negative: bool) -> bool:
+    value = _constant(node)
+    if value is None or value != 0.0:
+        return False
+    return (math.copysign(1.0, value) < 0) == negative
+
+
+def _zero_identities(node: sge.Expression) -> sge.Expression:
+    # Polars folds x + 0.0 and x - -0.0 to x, and 0.0 - x to -x, which keeps
+    # the sign of a zero x. NumPy gives +0.0 there, so test for zero instead.
+    value: sge.Expression
+    if isinstance(node, sge.Add) and _is_zero(node.expression, negative=False):
+        value = node.this.copy()
+    elif isinstance(node, sge.Add) and _is_zero(node.this, negative=False):
+        value = node.expression.copy()
+    elif isinstance(node, sge.Sub) and _is_zero(node.expression, negative=True):
+        value = node.this.copy()
+    elif isinstance(node, sge.Sub) and _is_zero(node.this, negative=False):
+        value = sge.Neg(this=sge.paren(node.expression.copy()))
+    else:
+        return node
+    zero = sge.EQ(this=value.copy(), expression=sge.Literal.number("0.0"))
+    return sge.paren(
+        sge.Case(ifs=[sge.If(this=zero, true=sge.Literal.number("0.0"))], default=value)
+    )
+
+
 def _double_literals(node: sge.Expression) -> sge.Expression:
     # Polars reads 1.0 as a decimal, so 1.0 / 0.0 raises instead of giving inf.
     if (
@@ -101,6 +147,7 @@ def to_polars_sql(sql: str) -> str:
         _nan_test,
         _bool_aggregates,
         _log_bases,
+        _zero_identities,
         _double_literals,
     ):
         tree = tree.transform(rewrite)
