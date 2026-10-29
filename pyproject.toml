@@ -28,7 +28,7 @@ dependencies = [
   "ibis-framework>=12,<13",
   "numpy>=2,<3",
   "packaging>=21.3,<27",
-  "pyarrow>=22,<26",
+  "pyarrow>=22,<27",
   "sqlglot>=30.11,<31",
 ]
 
@@ -62,7 +62,7 @@ dev = [
   "pytest-cov>=6,<8",
   "ruff>=0.11,<1",
   "scipy>=1.15,<2",
-  "sqlalchemy>=2.0.51,<2.1",
+  "sqlalchemy>=2.0.51,<2.2",
 ]
 
 [tool.hatch.build.targets.wheel]
