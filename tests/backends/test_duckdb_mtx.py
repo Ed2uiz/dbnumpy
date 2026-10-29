@@ -12,10 +12,10 @@ from dbnumpy import DuckDBBackend
 class _TracingConnection:
     def __init__(self, connection: object) -> None:
         self.connection = connection
-        self.sql: list[str] = []
+        self.statements: list[str] = []
 
     def execute(self, sql: str, *args: object, **kwargs: object) -> object:
-        self.sql.append(sql)
+        self.statements.append(sql)
         return self.connection.execute(sql, *args, **kwargs)  # type: ignore[attr-defined, no-any-return]
 
     def __getattr__(self, name: str) -> object:
@@ -77,9 +77,11 @@ def test_native_ingestion_uses_one_destination_ctas_and_no_stage_table(
 
     backend.from_mtx(path, name="values", assume_canonical=assume_canonical)
 
-    statements = "\n".join(trace.sql)
+    statements = "\n".join(trace.statements)
     assert "dbm_mtx_stage" not in statements
-    destination_ctas = [sql for sql in trace.sql if 'CREATE TABLE "values" AS' in sql]
+    destination_ctas = [
+        sql for sql in trace.statements if 'CREATE TABLE "values" AS' in sql
+    ]
     assert len(destination_ctas) == 1
     if assume_canonical:
         assert "columns={'raw_i': 'VARCHAR'" in destination_ctas[0]

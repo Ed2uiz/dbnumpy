@@ -385,7 +385,7 @@ class DuckDBBackend(Backend):
         self._record_created(name)
 
     def _execute_sql(self, sql: str) -> pa.Table:
-        return self.connection.execute(sql).to_arrow_table()
+        return self.connection.sql(sql).to_arrow_table()
 
     def _explain_sql(self, sql: str) -> str:
         rows = self.connection.execute(f"EXPLAIN {sql}").fetchall()

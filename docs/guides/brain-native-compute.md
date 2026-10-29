@@ -4,7 +4,55 @@ The summary benchmark already computes the filtering, normalization and gene sta
 
 ![Full preprocessing runtime including compute](../assets/brain-native-compute.png)
 
-## Updated DataFusion results
+## October 2026 results
+
+Measured with dbnumpy `ffef40a`, DuckDB 2.0.0, DataFusion 54.0.0, NumPy 2.5.3 and
+SciPy 1.18.1 on Python 3.12, in WSL 2 on an Intel Core Ultra 5 125U.
+
+| Input cells | Method | Median total (range) | Of which `compute()` | Peak memory |
+|---:|---|---:|---:|---:|
+| 5,000 | NumPy / SciPy | 2.0 s (2.0–2.4) | — | 0.98 GiB |
+| 5,000 | DuckDB 2.0 | 1.7 s (1.6–2.1) | 0.5 s | 0.45 GiB |
+| 5,000 | DataFusion 54 | 2.2 s (2.2–2.2) | 0.5 s | 0.46 GiB |
+| 10,000 | NumPy / SciPy | 4.2 s (4.1–5.0) | — | 1.88 GiB |
+| 10,000 | DuckDB 2.0 | 3.0 s (2.9–3.2) | 1.0 s | 0.72 GiB |
+| 10,000 | DataFusion 54 | 2.3 s (2.3–2.3) | 0.7 s | 0.60 GiB |
+| 25,000 | NumPy / SciPy | 15.4 s (11.6–18.4) | — | 4.58 GiB |
+| 25,000 | DuckDB 2.0 | 7.3 s (7.1–7.8) | 2.6 s | 1.53 GiB |
+| 25,000 | DataFusion 54 | 6.3 s (6.3–6.3) | 1.8 s | 0.77 GiB |
+| 50,000 | NumPy / SciPy | × | — | — |
+| 50,000 | DuckDB 2.0 | 14.3 s (14.0–15.4) | 5.1 s | 2.89 GiB |
+| 50,000 | DataFusion 54 | 10.6 s (10.6–10.9) | 3.2 s | 1.00 GiB |
+| 100,000 | NumPy / SciPy | × | — | — |
+| 100,000 | DuckDB 2.0 | 29.2 s (28.2–31.4) | 10.9 s | 4.02 GiB |
+| 100,000 | DataFusion 54 | 21.1 s (21.1–21.2) | 6.0 s | 1.16 GiB |
+| 250,000 | NumPy / SciPy | × | — | — |
+| 250,000 | DuckDB 2.0 | 79.1 s (76.6–95.6) | 33.6 s | 4.15 GiB |
+| 250,000 | DataFusion 54 | 60.2 s (60.0–61.0) | 16.7 s | 1.80 GiB |
+
+× means all three runs ran out of memory. All 45 completed runs passed the
+correctness checks below.
+
+How the runs were made:
+
+- Three repeats per point; the table and figure show the median.
+- Each run is a fresh process in a systemd scope capped at 7.51 GiB (the WSL
+  total) with no swap. DuckDB's memory limit and DataFusion's memory pool are set
+  to half of that. Engines use one thread.
+- Each repeat runs one method through every size before the next method starts,
+  and the method order rotates between repeats. Pending writes are flushed and the
+  run's input files are dropped from the page cache before every run.
+- A run starts only if no other process is using more than 20% of a CPU core.
+- Inputs are read from the Linux filesystem.
+
+[Raw results, versions and source hashes](../assets/brain-native-compute-isolated-results.json).
+
+## September 2026 results
+
+These earlier runs used DuckDB 1.5.5, one run per point, and are kept for
+reference. They are not comparable with the October results above.
+
+### Updated DataFusion results
 
 DataFusion now stores computed matrices in temporary Parquet files. It completed
 250,000 input cells in 107.97 seconds, including 25.54 seconds for `compute()`.
@@ -40,7 +88,7 @@ disappeared; their original validation files are not retained. The
 original result JSON, with their logs and validation files archived locally
 before the WSL session ended.
 
-## Original results: in-memory DataFusion cache
+### Original results: in-memory DataFusion cache
 
 These results describe the previous implementation and are retained for comparison.
 
@@ -98,7 +146,7 @@ After materialization, all gene means and variances are calculated again from th
 
 The largest absolute error in sampled normalized values was 8.88e-16. The large runs do not compare every matrix entry. A separate small fixture does compare every entry for all three engines, including zero cells, a rare gene and unsorted source coordinates. The test also confirms that the verifier rejects an intentionally altered value.
 
-## Conditions and limits
+## Conditions and limits (September runs)
 
 - Same nested samples of actual cells from the 10x 1.3M mouse brain dataset: 5,000 through 250,000 input cells. The entire 1.3M-cell matrix was not benchmarked.
 - The scientific function, package source, prepared dataset and independent references match the previous full-RAM study. No handwritten scientific SQL was added.
@@ -112,7 +160,15 @@ The largest absolute error in sampled normalized values was 8.88e-16. The large 
 
 ## Reproduce
 
-To regenerate the updated figure from the recorded measurements:
+To regenerate the current figure from the October measurements:
+
+```sh
+python benchmarks/plot_brain_compute.py \
+  --results docs/assets/brain-native-compute-isolated-results.json \
+  --output docs/assets/brain-native-compute
+```
+
+To regenerate the September figure from its recorded measurements:
 
 ```sh
 python benchmarks/plot_brain_compute.py \

@@ -47,8 +47,10 @@ uniqueness or dense completeness. The caller must guarantee those properties.
 External files must stay available and unchanged. SQL NULL values become NaN.
 
 Use `from_parquet()` for DataFusion Parquet input. It protects NaNs from a
-DataFusion 54 statistics optimization. `from_relation()` retains the existing
-relation's scan settings; it cannot repair a scan configured outside dbnumpy.
+DataFusion statistics optimization, so a context passed to `DataFusionBackend`
+must set `datafusion.execution.collect_statistics` to `false`. `from_relation()`
+retains the existing relation's scan settings; it cannot repair a scan
+configured outside dbnumpy.
 
 Host imports are independent of later input-array mutations. `from_relation()`
 is a live reference. Direct changes to managed registrations through raw engine

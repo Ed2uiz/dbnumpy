@@ -197,7 +197,8 @@ class DataFusionPointwiseLowerer:
             is_zero = f.iszero(left)
             unsafe = is_zero & (right < 0.0) & ~f.iszero(right)
             square_root_zero = is_zero & (right == 0.5)
-            negative_zero = (1.0 / left) < 0.0
+            # A float on the left of / reverses the operands in datafusion-python.
+            negative_zero = (lit(1.0) / left) < 0.0
             odd_integer = (right == f.floor(right)) & (f.abs(right % 2.0) == 1.0)
             signed_infinity = f.when(
                 negative_zero & odd_integer, lit(float("-inf"))

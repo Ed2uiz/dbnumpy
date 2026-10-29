@@ -7,7 +7,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from datafusion import DataFrame, SessionContext
+from datafusion import DataFrame, SessionConfig, SessionContext
 from scipy import sparse
 
 from dbnumpy import DataFusionBackend
@@ -149,7 +149,9 @@ def test_failed_registration_cleans_files_and_preserves_existing_results(
 def test_close_preserves_borrowed_files_and_caller_directory(tmp_path):
     path = tmp_path / "input.parquet"
     pq.write_table(pa.table({"i": [0, 1], "j": [1, 0], "x": [2.0, 3.0]}), path)
-    context = SessionContext()
+    context = SessionContext(
+        SessionConfig().set("datafusion.execution.collect_statistics", "false")
+    )
     backend = DataFusionBackend(context, temp_directory=tmp_path)
     matrix = backend.from_parquet(path, shape=(2, 2))
     result = (matrix * 2).compute(name="stored")

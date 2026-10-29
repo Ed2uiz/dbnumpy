@@ -1,4 +1,7 @@
-"""Plot full workflow runtime, including native materialization."""
+"""Plot full workflow runtime, including native materialization.
+
+Each point is the median of its repeats; it is drawn only if every repeat passed.
+"""
 
 from __future__ import annotations
 
@@ -22,11 +25,11 @@ def main():
     args = parser.parse_args()
     results = json.loads(args.results.read_text())
     assert results["endpoint"] == "native"
-    assert results["repeats"] == 1 and len(results["limits_gib"]) == 1
+    assert len(results["limits_gib"]) == 1
     updated = None
     if args.datafusion_results is not None:
         updated = json.loads(args.datafusion_results.read_text())
-        assert updated["endpoint"] == "native" and updated["repeats"] == 1
+        assert updated["endpoint"] == "native"
         assert updated["workflow_sha256"] == results["workflow_sha256"]
         assert updated["dataset"] == results["dataset"]
         assert updated["versions"] == results["versions"]
@@ -65,15 +68,17 @@ def main():
                 for row in measurements["trials"]
                 if row["engine"] == engine and row["cells"] == size
             ]
-            assert len(rows) == 1
-            row = rows[0]
-            verification = row.get("verification")
-            valid = (
-                isinstance(verification, dict)
-                and verification["scope"] == "native_summaries_count_and_sample"
+            assert len(rows) == measurements["repeats"]
+            valid = all(
+                isinstance(row.get("verification"), dict)
+                and row["verification"]["scope"] == "native_summaries_count_and_sample"
                 and row["status"] == "passed"
+                for row in rows
             )
-            times.append(row["total_seconds"] if valid else np.nan)
+            median = (
+                np.median([row["total_seconds"] for row in rows]) if valid else np.nan
+            )
+            times.append(median)
             if not valid:
                 failed.append(size)
         ax.plot(

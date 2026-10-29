@@ -7,7 +7,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
-from datafusion import DataFrame, SessionContext
+from datafusion import DataFrame, SessionConfig, SessionContext
 
 from dbnumpy.backends import DataFusionBackend
 
@@ -25,7 +25,13 @@ def test_external_parquet_nan_statistics_preserve_values(
     )
     pq.write_table(table, path, row_group_size=row_group_size, write_page_index=True)
     original = path.read_bytes()
-    context = SessionContext() if borrowed_context else None
+    context = (
+        SessionContext(
+            SessionConfig().set("datafusion.execution.collect_statistics", "false")
+        )
+        if borrowed_context
+        else None
+    )
     backend = DataFusionBackend(context) if context else DataFusionBackend.connect()
     with backend:
         # Import must only build a scan, never load or rewrite the input values.
@@ -53,8 +59,11 @@ def test_external_parquet_nan_statistics_preserve_values(
     assert path.read_bytes() == original
     if context is not None:
         # Import must not change settings on a context owned by the caller.
-        setting = context.sql("SHOW datafusion.execution.collect_statistics")
-        assert setting.to_arrow_table().column(1).to_pylist() == ["true"]
+        config = context.copied_config().with_information_schema(True)
+        setting = SessionContext(config).sql(
+            "SHOW datafusion.execution.collect_statistics"
+        )
+        assert setting.to_arrow_table().column(1).to_pylist() == ["false"]
 
 
 @pytest.mark.parametrize("split_files", [False, True])
@@ -178,6 +187,14 @@ def test_parquet_files_remain_lazy_and_include_structural_zeros(
 
 
 @pytest.mark.backend
+def test_parquet_requires_a_context_without_statistics(tmp_path: Path) -> None:
+    path = tmp_path / "input.parquet"
+    pq.write_table(pa.table({"i": [0], "j": [0], "x": [1.0]}), path)
+    with DataFusionBackend(SessionContext()) as backend:
+        with pytest.raises(ValueError, match="collect_statistics"):
+            backend.from_parquet(path, shape=(1, 1))
+
+
 def test_parquet_schema_is_validated_before_registration(tmp_path: Path) -> None:
     missing = tmp_path / "missing_column.parquet"
     strings = tmp_path / "strings.parquet"
@@ -233,3 +250,12 @@ def test_parquet_numeric_columns_are_normalized(tmp_path: Path) -> None:
         assert matrix.dtype == np.dtype(np.float64)
     finally:
         backend.close()
+
+
+def test_partitioned_joins_broadcast_large_selectors() -> None:
+    # A 200,000-row selector is above DataFusion's default 1 MB broadcast limit.
+    with DataFusionBackend.connect(target_partitions=4) as backend:
+        matrix = backend.from_numpy(np.ones((200_000, 2)))
+        plan = matrix[np.arange(200_000)[::-1], :].explain()
+    assert "mode=CollectLeft" in plan
+    assert "mode=Partitioned" not in plan
