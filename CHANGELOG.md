@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Experimental Polars backend, `PolarsBackend`.
+- DataFusion 55 and DuckDB 2 support.
+- Faster DataFusion joins on multiple threads.
+
 ## 0.4.0a0 — pre-alpha
 
 - Lazy dense and sparse matrix operations in DuckDB and DataFusion.
