@@ -63,6 +63,7 @@ It reads the plan; it is not the plan itself.
 | Ibis | Joins, indexing, broadcasting, and reductions, translated into SQL |
 | Small SQL writer | Elementwise calculations, including long chains and shared steps |
 | Native DataFusion expressions | Elementwise calculations using one source in DataFusion |
+| Polars SQL rewrite | The DuckDB SQL above, adapted for Polars |
 
 Ibis builds database queries from Python expressions. It uses SQLGlot to write
 SQL for each database. dbnumpy also uses SQLGlot for a narrow integer-division
@@ -77,6 +78,12 @@ DataFusion selects between native execution and SQL for `to_numpy()`,
 `compute()` and `explain()`. `to_scipy()` and `show()` use generated matrix
 SQL. Reductions generate their own SQL queries. `compile()` returns equivalent
 matrix SQL; it does not claim that DataFusion will execute that SQL text.
+
+Polars runs the DuckDB SQL after a SQLGlot rewrite that fills in functions
+Polars SQL lacks. Hyperbolic functions become exponential formulas, NaN tests
+become comparisons with NaN, Boolean aggregates become integer `MAX` or `MIN`,
+two-argument logarithms become a ratio of natural logarithms, and decimal
+literals become doubles. `compile()` returns the SQL before this rewrite.
 
 Long relational plans use named SQL stages to limit query nesting. A stage is
 part of the same query, not a stored intermediate result. The database still
