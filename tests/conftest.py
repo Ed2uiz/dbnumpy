@@ -7,10 +7,13 @@ import numpy as np
 import pytest
 from scipy import sparse
 
-from dbnumpy.backends import Backend, DataFusionBackend, DuckDBBackend
+from dbnumpy.backends import Backend, DataFusionBackend, DuckDBBackend, PolarsBackend
 
 
-@pytest.fixture(params=[DuckDBBackend, DataFusionBackend], ids=["duckdb", "datafusion"])
+@pytest.fixture(
+    params=[DuckDBBackend, DataFusionBackend, PolarsBackend],
+    ids=["duckdb", "datafusion", "polars"],
+)
 def backend(request: pytest.FixtureRequest) -> Iterator[Backend]:
     backend_type = request.param
     instance = backend_type.connect(max_densify_cells=10_000)

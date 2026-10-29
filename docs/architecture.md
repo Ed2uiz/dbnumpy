@@ -1,7 +1,7 @@
 # How dbnumpy works
 
 dbnumpy records matrix calculations, turns them into database queries, and runs
-those queries in DuckDB or DataFusion.
+those queries in DuckDB, DataFusion or Polars.
 
 ```text
 NumPy-style expression → saved matrix steps → database query → result
@@ -40,7 +40,7 @@ leaves the earlier steps unchanged. Two branches can refer to the same step.
 
 They let us check matrix rules before writing a database query. For example,
 missing sparse entries mean zero. `sqrt(0)` remains zero, but `exp(0)` becomes
-one and may produce a much larger result. Both engines need the same rule.
+one and may produce a much larger result. Every engine needs the same rule.
 
 We keep this small plan because it already describes the supported matrix
 operations and gives us one place to inspect their meaning. The query builders
@@ -63,6 +63,7 @@ It reads the plan; it is not the plan itself.
 | Ibis | Joins, indexing, broadcasting, and reductions, translated into SQL |
 | Small SQL writer | Elementwise calculations, including long chains and shared steps |
 | Native DataFusion expressions | Elementwise calculations using one source in DataFusion |
+| Polars SQL rewrite | The DuckDB SQL above, adapted for Polars |
 
 Ibis builds database queries from Python expressions. It uses SQLGlot to write
 SQL for each database. dbnumpy also uses SQLGlot for a narrow integer-division
@@ -77,6 +78,12 @@ DataFusion selects between native execution and SQL for `to_numpy()`,
 `compute()` and `explain()`. `to_scipy()` and `show()` use generated matrix
 SQL. Reductions generate their own SQL queries. `compile()` returns equivalent
 matrix SQL; it does not claim that DataFusion will execute that SQL text.
+
+Polars runs the DuckDB SQL after a SQLGlot rewrite that fills in functions
+Polars SQL lacks. Hyperbolic functions become exponential formulas, NaN tests
+become comparisons with NaN, Boolean aggregates become integer `MAX` or `MIN`,
+two-argument logarithms become a ratio of natural logarithms, and decimal
+literals become doubles. `compile()` returns the SQL before this rewrite.
 
 Long relational plans use named SQL stages to limit query nesting. A stage is
 part of the same query, not a stored intermediate result. The database still
@@ -125,7 +132,7 @@ The matrix calculation itself waits until an execution method is called.
 
 ## Correctness and limits
 
-Both engines store coordinates `i` and `j` as int64 and values `x` as float64.
+All engines store coordinates `i` and `j` as int64 and values `x` as float64.
 Dense storage has a row for every coordinate. Sparse storage can omit zeros.
 The shape is stored separately, preserving empty dimensions and all-zero rows.
 SQL NULL values become NaN. Dense inputs preserve signed zeros; sparse imports
@@ -142,7 +149,7 @@ an intermediate result. See [API and limits](api.md) for the full contract.
 
 ## How we check the results
 
-CI checks both engines against NumPy and SciPy. Tests include empty shapes,
+CI checks all three engines against NumPy and SciPy. Tests include empty shapes,
 repeated indices, sparse zeros, NaN, infinities, signed zeros, and branches
 that reuse earlier results. Seeded mixed calculations exercise combinations
 of operations as well as individual functions.

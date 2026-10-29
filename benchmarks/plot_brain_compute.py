@@ -44,8 +44,14 @@ def main():
         "scipy": "NumPy / SciPy",
         "duckdb": "dbnumpy DuckDB",
         "datafusion": "dbnumpy DataFusion",
+        "polars": "dbnumpy Polars",
     }
-    colors = {"scipy": "#343d46", "duckdb": "#197a72", "datafusion": "#bc5925"}
+    colors = {
+        "scipy": "#343d46",
+        "duckdb": "#197a72",
+        "datafusion": "#bc5925",
+        "polars": "#5b4fa3",
+    }
     fig, (ax, failures) = plt.subplots(
         2,
         1,
@@ -60,6 +66,8 @@ def main():
         measurements = (
             updated if engine == "datafusion" and updated is not None else results
         )
+        if not any(row["engine"] == engine for row in measurements["trials"]):
+            continue
         engine_sizes = measurements["sizes"]
         times, failed = [], []
         for size in engine_sizes:
@@ -103,6 +111,7 @@ def main():
                 "scipy": "SciPy",
                 "duckdb": "DuckDB",
                 "datafusion": "DataFusion",
+                "polars": "Polars",
             }
             failures_are_oom = all(
                 row["status"] == "memory_limit"

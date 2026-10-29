@@ -1,7 +1,7 @@
 # API and limits
 
-dbnumpy 0.4.0a0 is a pre-alpha matrix package. Both engines share the operations
-below. The API is not a complete NumPy implementation.
+dbnumpy 0.4.0a0 is a pre-alpha matrix package. All three engines share the
+operations below. The API is not a complete NumPy implementation.
 
 ## Objects
 
@@ -29,7 +29,8 @@ with DuckDBBackend.connect() as backend:
     result = np.sqrt(x + 1).to_numpy()
 ```
 
-`DataFusionBackend.connect()` provides the same matrix API. Objects combined
+`DataFusionBackend.connect()` and the experimental `PolarsBackend.connect()`
+provide the same matrix API. Objects combined
 in an expression must belong to the same backend instance.
 
 | Method | Contract |
@@ -39,7 +40,7 @@ in an expression must belong to the same backend instance.
 | `from_scipy(values)` | Copies sparse input, sums duplicates and removes zeros |
 | `from_relation(name, shape=..., storage=...)` | Wraps an existing coordinate relation without copying values |
 | DuckDB `from_mtx(path, ...)` | Reads and validates Matrix Market input in DuckDB |
-| DataFusion `from_parquet(paths, shape=..., storage=...)` | Scans external canonical coordinate Parquet |
+| DataFusion and Polars `from_parquet(paths, shape=..., storage=...)` | Scans external canonical coordinate Parquet |
 
 Relations use `(i, j, x)`: integer row/column coordinates and numeric values.
 External relation/Parquet wrappers check the schema but do not scan for bounds,
@@ -51,6 +52,15 @@ DataFusion statistics optimization, so a context passed to `DataFusionBackend`
 must set `datafusion.execution.collect_statistics` to `false`. `from_relation()`
 retains the existing relation's scan settings; it cannot repair a scan
 configured outside dbnumpy.
+
+`PolarsBackend` runs the same SQL through a Polars `SQLContext` after a
+rewrite (see [how a query is built](architecture.md#how-a-query-is-built)).
+`connect(engine=...)` selects the Polars engine: `"streaming"` (the
+default), `"in-memory"` or `"auto"`. Its `from_parquet()` follows the
+DataFusion contract above. Polars has no query memory limit. The streaming
+engine keeps peak memory low, but only a process or container limit bounds
+it; in the brain benchmark the in-memory engine ran out of memory from
+100,000 cells.
 
 Host imports are independent of later input-array mutations. `from_relation()`
 is a live reference. Direct changes to managed registrations through raw engine
@@ -129,7 +139,7 @@ The stable variance formula can differ from NumPy's intermediate rounding at
 extreme magnitudes. See [correctness and limits](architecture.md#correctness-and-limits).
 
 Product reductions are deferred. A log/exp substitute would not preserve
-zeros, signs, nonfinite values or accuracy across both engines.
+zeros, signs, nonfinite values or accuracy across all engines.
 
 ## Execution
 
@@ -179,8 +189,8 @@ indices; `x` is the value. This executes the expression, and sorting can read
 more than ten entries. Sparse zeros may be absent from the coordinate rows.
 
 `compute()` returns an array backed by a completed result. DuckDB uses temporary
-tables; DataFusion uses engine-written temporary Parquet files. Both support
-subsequent matrix operations. DataFusion's result files stay available until
+tables; DataFusion and Polars stream results to temporary Parquet files. All
+support subsequent matrix operations. DataFusion's result files stay available until
 the backend closes, including when the original input is no longer available.
 The files are temporary storage, not a persistent dataset export.
 
@@ -190,6 +200,8 @@ directory for result files and engine spill files. With a caller-supplied
 the result-file directory; the context retains its own spill configuration.
 Closing the backend removes its result files, preserving the supplied directory
 and caller-owned files. Use a context manager to ensure cleanup on exceptions.
+`PolarsBackend.connect(temp_directory=...)` selects the result-file directory;
+Polars spill files follow its own `POLARS_TEMP_DIR` setting.
 
 In WSL 2, use a Linux temporary directory such as `/tmp`. Large DataFusion 54
 writes failed with `Upload aborted` on `/mnt/c` in our tests; the same writes

@@ -1,7 +1,7 @@
 <h1 align="center">dbnumpy</h1>
 
 <p align="center">
-  NumPy-style matrix operations in DuckDB and Apache DataFusion.
+  NumPy-style matrix operations in DuckDB, Apache DataFusion and Polars.
 </p>
 
 <p align="center">
@@ -38,7 +38,8 @@ python -m pip install --only-binary=:all: -e '.[duckdb,datafusion,scipy]'
 ```
 
 These commands work on Linux, macOS and WSL 2. Install just the `duckdb` or
-`datafusion` extra if you only need one engine.
+`datafusion` extra if you only need one engine. The experimental Polars
+backend uses the `polars` extra.
 
 ## Example
 
@@ -54,14 +55,15 @@ with dnp.DuckDBBackend.connect() as backend:
     print(y.to_numpy())  # run the calculation and collect the result
 ```
 
-Use `DataFusionBackend` to run the same operations in DataFusion.
-Both engines are checked against NumPy and SciPy in CI.
+Use `DataFusionBackend` or the experimental `PolarsBackend` to run the same
+operations in DataFusion or Polars. All three engines are checked against
+NumPy and SciPy in CI.
 
 ## Support
 
 | Area | Supported | Limits |
 |---|---|---|
-| Engines | DuckDB and DataFusion | File-loading options differ |
+| Engines | DuckDB, DataFusion and experimental Polars | File-loading options differ; Polars has no memory limit |
 | Arrays | Dense and sparse matrices, vectors and scalars | Float64; no higher-rank arrays or labels |
 | Operations | Arithmetic, broadcasting and selected NumPy functions | Partial API; may change during pre-alpha |
 | Indexing | Slices, transpose, repeated indices and one-axis Boolean selection | No assignment or full Boolean masks |
@@ -157,7 +159,7 @@ backend.close()
 ## Benchmark
 
 As a proof of concept, below is a sample workflow commonly used in bioinformatics that preprocesses a cell-by-gene count matrix. Each value in this matrix represents the count of a specific feature (gene) in a sample (cell). The workflow filters cells and genes, normalizes counts, and calculates
-gene statistics using the same underlying NumPy code across SciPy, dbnumpy with DuckDB and dbnumpy with DataFusion. We tested 5,000–250,000 cells
+gene statistics using the same underlying NumPy code across SciPy and dbnumpy with DuckDB, DataFusion and Polars. We tested 5,000–250,000 cells
 sampled from the [10x 1.3M mouse brain dataset](https://www.10xgenomics.com/datasets/1-3-million-brain-cells-from-e-18-mice-2-standard-1-3-0).
 
 <details>
@@ -231,23 +233,24 @@ materialized = result.values if backend is None else result.values.compute()
 
 ![Single-cell preprocessing runtime including storing the normalized matrix](docs/assets/brain-native-compute.png)
 
-Median of three runs per point in WSL 2, each in a fresh process with a 7.51 GiB
-memory cap and no swap; the database engines get half of it. Runs of different
-methods never overlap. Times include `compute()` to store the normalized matrix in
-the database, and exclude matrix preparation, export and validation.
+Median of three runs per point in WSL 2 on 14 CPU threads, each in a fresh
+process with a 7.51 GiB memory cap and no swap. DuckDB and DataFusion get half of
+it as their memory limit; Polars has no memory limit. Runs of different methods
+never overlap. Times include `compute()` to store the normalized matrix in the
+database, and exclude matrix preparation, export and validation.
 × marks an out-of-memory failure.
 
-| Input cells | NumPy / SciPy | dbnumpy DuckDB 2.0 | dbnumpy DataFusion 54 |
-|---:|---:|---:|---:|
-| 5,000 | 2.0 s | 1.7 s | 2.2 s |
-| 10,000 | 4.2 s | 3.0 s | 2.3 s |
-| 25,000 | 15.4 s | 7.3 s | 6.3 s |
-| 50,000 | × | 14.3 s | 10.6 s |
-| 100,000 | × | 29.2 s | 21.1 s |
-| 250,000 | × | 79.1 s | 60.2 s |
+| Input cells | NumPy / SciPy | dbnumpy DuckDB 2.0 | dbnumpy DataFusion 55 | dbnumpy Polars 2.1 |
+|---:|---:|---:|---:|---:|
+| 5,000 | 1.9 s | 0.7 s | 1.0 s | 1.4 s |
+| 10,000 | 3.9 s | 0.9 s | 1.4 s | 2.2 s |
+| 25,000 | 12.7 s | 1.9 s | 3.4 s | 4.9 s |
+| 50,000 | × | 3.3 s | 6.8 s | 9.5 s |
+| 100,000 | × | 7.3 s | 14.3 s | 18.8 s |
+| 250,000 | × | 20.9 s | 35.7 s | 48.4 s |
 
-All 45 completed runs passed checks of gene summaries, entry counts and sampled
-values.
+All 63 completed runs passed checks of gene summaries, entry counts and sampled
+values. SciPy itself uses one thread.
 
 [Method and results](docs/guides/brain-native-compute.md) ·
 [Earlier PBMC benchmark](docs/guides/pbmc-benchmark.md)

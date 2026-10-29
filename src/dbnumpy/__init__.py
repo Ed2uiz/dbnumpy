@@ -6,6 +6,7 @@ from dbnumpy.backends import (
     BackendCapabilities,
     DataFusionBackend,
     DuckDBBackend,
+    PolarsBackend,
 )
 from dbnumpy.exceptions import (
     BackendMismatchError,
@@ -32,6 +33,7 @@ __all__ = [
     "DensificationError",
     "DuckDBBackend",
     "MatrixMarketHeader",
+    "PolarsBackend",
     "StorageKind",
     "UnsupportedOperationError",
     "__version__",

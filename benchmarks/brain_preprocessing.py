@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 from benchmarks.pbmc_memory_pressure import mark, read_counters  # noqa: E402
 from benchmarks.pbmc_preprocessing import (  # noqa: E402
     ENGINES,
+    THREAD_VARS,
     sha256,
     write_json,
 )
@@ -412,6 +413,9 @@ def worker(args):
     spill = (args.output / "spill").resolve()
     spill.mkdir()
     os.environ["TMPDIR"] = str(spill)
+    # One thread count for every engine; BLAS and Polars read it at import.
+    for variable in (*THREAD_VARS, "POLARS_MAX_THREADS"):
+        os.environ[variable] = str(args.threads)
     mark(args.output, "imports")
     import numpy as np
     from scipy import sparse
@@ -443,7 +447,7 @@ def worker(args):
 
         backend = dnp.DuckDBBackend.connect(
             args.data / "counts.duckdb",
-            threads=1,
+            threads=args.threads,
             memory_limit=f"{args.engine_bytes}B",
             temp_directory=spill,
             max_sparse_host_values=2_000_000_000,
@@ -455,12 +459,19 @@ def worker(args):
             "benchmark_subset", shape=(args.size, manifest["genes"]), storage="sparse"
         )
     else:
-        backend = dnp.DataFusionBackend.connect(
-            target_partitions=1,
-            memory_limit_bytes=args.engine_bytes,
-            temp_directory=spill,
-            max_sparse_host_values=2_000_000_000,
-        )
+        if args.engine == "datafusion":
+            backend = dnp.DataFusionBackend.connect(
+                target_partitions=args.threads,
+                memory_limit_bytes=args.engine_bytes,
+                temp_directory=spill,
+                max_sparse_host_values=2_000_000_000,
+            )
+        else:
+            # Polars has no memory limit; only the process cap applies.
+            backend = dnp.PolarsBackend.connect(
+                temp_directory=spill,
+                max_sparse_host_values=2_000_000_000,
+            )
         values = backend.from_parquet(
             [
                 args.data / part["file"]
@@ -908,8 +919,9 @@ def main():
             if name != "reference":
                 p.add_argument("--output", type=Path, required=True)
             if name == "worker":
-                p.add_argument("--engine", choices=ENGINES, required=True)
+                p.add_argument("--engine", choices=(*ENGINES, "polars"), required=True)
                 p.add_argument("--engine-bytes", type=int, required=True)
+                p.add_argument("--threads", type=int, default=1)
     args = parser.parse_args()
     globals()[args.command.replace("-", "_")](args)
 

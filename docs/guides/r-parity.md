@@ -10,12 +10,12 @@ not a claim of complete cross-language equivalence.
 | Capability | R reference | dbnumpy |
 |---|---|---|
 | Dense/sparse matrices | Supported | Supported |
-| Engines | DuckDB | DuckDB and DataFusion |
+| Engines | DuckDB | DuckDB, DataFusion and experimental Polars |
 | Shape, transpose, host conversion | Supported | Supported |
 | Scalar/elementwise arithmetic | R dispatch and recycling | Selected operators and NumPy broadcasting |
 | Sums, means, variance, SD | Host results | Host results; `ddof=1` for sample variance/SD |
 | Math functions | Broad S4 dispatch; some members unsupported or lightly tested | Explicit tested subset listed in the API |
-| Min/max/any/all | Source-defined; uneven direct coverage | Tested on both engines |
+| Min/max/any/all | Source-defined; uneven direct coverage | Tested on all three engines |
 | Missing values | Method-specific R behavior | Ordinary and explicit `nan*` reductions |
 | Indexing | Integer, logical and names | Integer and one-axis Boolean; order/repeats retained |
 | Labels | Row/column names | Missing |
