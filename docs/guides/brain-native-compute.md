@@ -4,47 +4,50 @@ The summary benchmark already computes the filtering, normalization and gene sta
 
 ![Full preprocessing runtime including compute](../assets/brain-native-compute.png)
 
-## Results with 14 threads (October 27, 2026)
+## Results with 14 threads (October 29, 2026)
 
-Measured with dbnumpy `2295293`, DuckDB 2.0.0, DataFusion 55.0.0, Polars 2.1.0,
+Measured with dbnumpy `dce82b4`, DuckDB 2.0.0, DataFusion 55.0.0, Polars 2.1.0,
 NumPy 2.5.3 and SciPy 1.18.1 on Python 3.12, in WSL 2 on an Intel Core Ultra 5
 125U. Every engine and BLAS library uses all 14 CPU threads.
 
 | Input cells | Method | Median total (range) | Of which `compute()` | Peak memory |
 |---:|---|---:|---:|---:|
-| 5,000 | NumPy / SciPy | 2.0 s (2.0–2.1) | — | 0.98 GiB |
-| 5,000 | DuckDB 2.0 | 0.8 s (0.7–0.9) | 0.1 s | 0.48 GiB |
-| 5,000 | DataFusion 55 | 1.1 s (1.1–1.5) | 0.3 s | 0.57 GiB |
-| 5,000 | Polars 2.1 | 1.5 s (1.5–1.6) | 0.3 s | 0.67 GiB |
-| 10,000 | NumPy / SciPy | 4.4 s (4.2–5.0) | — | 1.88 GiB |
-| 10,000 | DuckDB 2.0 | 0.9 s (0.9–1.0) | 0.2 s | 0.76 GiB |
-| 10,000 | DataFusion 55 | 1.5 s (1.5–1.5) | 0.6 s | 0.74 GiB |
-| 10,000 | Polars 2.1 | 2.3 s (2.3–3.0) | 0.6 s | 1.03 GiB |
-| 25,000 | NumPy / SciPy | 12.7 s (12.5–14.1) | — | 4.58 GiB |
-| 25,000 | DuckDB 2.0 | 1.9 s (1.8–1.9) | 0.5 s | 1.57 GiB |
-| 25,000 | DataFusion 55 | 3.7 s (3.6–3.8) | 1.4 s | 1.05 GiB |
-| 25,000 | Polars 2.1 | 5.4 s (5.3–5.4) | 1.4 s | 1.68 GiB |
+| 5,000 | NumPy / SciPy | 1.9 s (1.9–1.9) | — | 0.98 GiB |
+| 5,000 | DuckDB 2.0 | 0.7 s (0.6–0.7) | 0.1 s | 0.48 GiB |
+| 5,000 | DataFusion 55 | 1.0 s (1.0–1.0) | 0.3 s | 0.59 GiB |
+| 5,000 | Polars 2.1 | 1.4 s (1.4–1.4) | 0.3 s | 0.69 GiB |
+| 10,000 | NumPy / SciPy | 3.9 s (3.9–4.8) | — | 1.88 GiB |
+| 10,000 | DuckDB 2.0 | 0.9 s (0.9–0.9) | 0.2 s | 0.76 GiB |
+| 10,000 | DataFusion 55 | 1.4 s (1.4–1.4) | 0.5 s | 0.74 GiB |
+| 10,000 | Polars 2.1 | 2.2 s (2.2–2.2) | 0.5 s | 1.05 GiB |
+| 25,000 | NumPy / SciPy | 12.7 s (11.0–14.6) | — | 4.58 GiB |
+| 25,000 | DuckDB 2.0 | 1.9 s (1.8–2.1) | 0.6 s | 1.57 GiB |
+| 25,000 | DataFusion 55 | 3.4 s (3.4–3.6) | 1.3 s | 1.04 GiB |
+| 25,000 | Polars 2.1 | 4.9 s (4.8–5.0) | 1.3 s | 1.08 GiB |
 | 50,000 | NumPy / SciPy | × | — | — |
-| 50,000 | DuckDB 2.0 | 3.7 s (3.6–3.8) | 1.0 s | 2.93 GiB |
-| 50,000 | DataFusion 55 | 7.3 s (7.0–7.4) | 2.7 s | 1.68 GiB |
-| 50,000 | Polars 2.1 | 10.4 s (10.1–10.4) | 2.8 s | 1.93 GiB |
+| 50,000 | DuckDB 2.0 | 3.3 s (3.3–4.4) | 1.0 s | 2.93 GiB |
+| 50,000 | DataFusion 55 | 6.8 s (6.7–6.9) | 2.7 s | 1.63 GiB |
+| 50,000 | Polars 2.1 | 9.5 s (9.5–9.9) | 2.6 s | 1.99 GiB |
 | 100,000 | NumPy / SciPy | × | — | — |
-| 100,000 | DuckDB 2.0 | 7.5 s (7.5–9.2) | 2.6 s | 4.08 GiB |
-| 100,000 | DataFusion 55 | 28.1 s (28.0–29.3) | 9.7 s | 3.10 GiB |
-| 100,000 | Polars 2.1 | 20.5 s (20.2–24.5) | 5.6 s | 2.11 GiB |
+| 100,000 | DuckDB 2.0 | 7.3 s (6.9–8.3) | 2.8 s | 4.09 GiB |
+| 100,000 | DataFusion 55 | 14.3 s (13.9–14.3) | 5.4 s | 2.33 GiB |
+| 100,000 | Polars 2.1 | 18.8 s (18.8–18.9) | 5.2 s | 2.14 GiB |
 | 250,000 | NumPy / SciPy | × | — | — |
-| 250,000 | DuckDB 2.0 | 23.3 s (23.0–29.5) | 10.8 s | 4.23 GiB |
-| 250,000 | DataFusion 55 | 84.2 s (83.5–95.8) | 33.9 s | 4.06 GiB |
-| 250,000 | Polars 2.1 | 55.3 s (51.2–59.9) | 16.6 s | 1.39 GiB |
+| 250,000 | DuckDB 2.0 | 20.9 s (20.5–31.4) | 10.0 s | 4.25 GiB |
+| 250,000 | DataFusion 55 | 35.7 s (35.3–35.8) | 14.1 s | 4.00 GiB |
+| 250,000 | Polars 2.1 | 48.4 s (48.0–56.9) | 14.0 s | 2.27 GiB |
 
 × means all three runs ran out of memory. All 63 completed runs passed the
 correctness checks below. The protocol is the same as the one-thread runs below,
 except for the thread count and that Polars, which has no memory limit, is only
 bounded by the process cap.
 
-DuckDB gains the most from more threads: 23.3 s at 250,000 cells, against 79.1 s
-with one thread. DataFusion is slower from 100,000 cells than with one thread
-(84.2 s against 60.2 s at 250,000), and uses more memory.
+DuckDB gains the most from more threads: 20.9 s at 250,000 cells, against 79.1 s
+with one thread. DataFusion takes 35.7 s, against 60.2 s with one thread.
+dbnumpy raises DataFusion's broadcast-join limits so that small selector and
+scale-vector tables are copied to every partition; with DataFusion's defaults
+the whole coordinate relation was hash-repartitioned for each such join, and
+the same run took 84.2 s. Polars uses the least memory from 100,000 cells.
 
 [Raw results, versions and source hashes](../assets/brain-native-compute-threads-results.json).
 

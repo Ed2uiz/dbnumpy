@@ -242,12 +242,12 @@ database, and exclude matrix preparation, export and validation.
 
 | Input cells | NumPy / SciPy | dbnumpy DuckDB 2.0 | dbnumpy DataFusion 55 | dbnumpy Polars 2.1 |
 |---:|---:|---:|---:|---:|
-| 5,000 | 2.0 s | 0.8 s | 1.1 s | 1.5 s |
-| 10,000 | 4.4 s | 0.9 s | 1.5 s | 2.3 s |
-| 25,000 | 12.7 s | 1.9 s | 3.7 s | 5.4 s |
-| 50,000 | × | 3.7 s | 7.3 s | 10.4 s |
-| 100,000 | × | 7.5 s | 28.1 s | 20.5 s |
-| 250,000 | × | 23.3 s | 84.2 s | 55.3 s |
+| 5,000 | 1.9 s | 0.7 s | 1.0 s | 1.4 s |
+| 10,000 | 3.9 s | 0.9 s | 1.4 s | 2.2 s |
+| 25,000 | 12.7 s | 1.9 s | 3.4 s | 4.9 s |
+| 50,000 | × | 3.3 s | 6.8 s | 9.5 s |
+| 100,000 | × | 7.3 s | 14.3 s | 18.8 s |
+| 250,000 | × | 20.9 s | 35.7 s | 48.4 s |
 
 All 63 completed runs passed checks of gene summaries, entry counts and sampled
 values. SciPy itself uses one thread.
