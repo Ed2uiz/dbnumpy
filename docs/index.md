@@ -1,6 +1,7 @@
 # dbnumpy
 
-dbnumpy provides lazy matrix operations in DuckDB and DataFusion. Python
+dbnumpy provides lazy matrix operations in DuckDB, DataFusion and Polars
+(experimental). Python
 expressions build a plan. The database runs it when you collect a result,
 request a reduction or call `compute()`.
 
@@ -15,6 +16,6 @@ and supports matrices, plus vectors and scalars returned by indexing.
 - [How the package works](architecture.md)
 - [R comparison](guides/r-parity.md)
 
-Both engines run the shared NumPy/SciPy reference tests in
+All three engines run the shared NumPy/SciPy reference tests in
 [CI](https://github.com/Ed2uiz/dbnumpy/actions). CI also checks types, lint,
 examples, documentation and installed packages.

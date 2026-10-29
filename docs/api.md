@@ -1,7 +1,7 @@
 # API and limits
 
-dbnumpy 0.4.0a0 is a pre-alpha matrix package. Both engines share the operations
-below. The API is not a complete NumPy implementation.
+dbnumpy 0.4.0a0 is a pre-alpha matrix package. All three engines share the
+operations below. The API is not a complete NumPy implementation.
 
 ## Objects
 
@@ -129,7 +129,7 @@ The stable variance formula can differ from NumPy's intermediate rounding at
 extreme magnitudes. See [correctness and limits](architecture.md#correctness-and-limits).
 
 Product reductions are deferred. A log/exp substitute would not preserve
-zeros, signs, nonfinite values or accuracy across both engines.
+zeros, signs, nonfinite values or accuracy across all engines.
 
 ## Execution
 

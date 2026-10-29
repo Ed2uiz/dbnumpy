@@ -34,5 +34,5 @@ Arithmetic, indexing and transpose build plans. Reductions run immediately.
 `to_numpy()` and `to_scipy()` collect data into Python. `compute()` stores a
 result in the engine and returns a new lazy object.
 
-Both engines use the same matrix rules. Inputs must belong to the same backend
+All engines use the same matrix rules. Inputs must belong to the same backend
 instance to be combined. Closing the backend releases its registered resources.

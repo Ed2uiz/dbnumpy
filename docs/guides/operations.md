@@ -40,5 +40,5 @@ underflow seen in a direct NumPy calculation at extreme magnitudes.
 | Variance of `[-1e154, 1e154]` | `inf` | `1e308` |
 | SD of `[-1e-200, 1e-200]` | `0.0` | `1e-200` |
 
-These cases are tested on both engines. See [correctness and limits](../architecture.md#correctness-and-limits)
+These cases are tested on all three engines. See [correctness and limits](../architecture.md#correctness-and-limits)
 and the [full API contract](../api.md) for options and edge cases.

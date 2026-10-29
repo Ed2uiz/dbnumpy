@@ -1,6 +1,6 @@
 # Contributing
 
-Use Python 3.12 or newer. Install both engines for development:
+Use Python 3.12 or newer. Install all three engines for development:
 
 ```bash
 python3 -m venv .venv
@@ -55,7 +55,7 @@ they do not guarantee the same limits for other queries or machines.
 - Keep matrix rules in the operation plan (IR), separate from SQL generation.
   See [how the IR works](docs/architecture.md#what-is-the-ir).
 - Keep IR nodes immutable and free of engine objects or Python callbacks.
-- Test supported behavior on both engines against NumPy or SciPy.
+- Test supported behavior on every engine against NumPy or SciPy.
 - For sparse operations, test what happens at missing coordinates.
 - Check generated plans when a change promises fewer scans or joins.
 - Use database expressions instead of Python UDFs for relational operations.

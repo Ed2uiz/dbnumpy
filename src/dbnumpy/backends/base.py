@@ -1,4 +1,4 @@
-"""Backend execution contract shared by DuckDB and DataFusion."""
+"""Backend execution contract shared by DuckDB, DataFusion and Polars."""
 
 from __future__ import annotations
 
