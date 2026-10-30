@@ -448,31 +448,6 @@ def _metadata(expr: MatrixExpr) -> tuple[Shape, str, int]:
     return computed[id(expr)]
 
 
-def sources(expr: MatrixExpr) -> frozenset[Source]:
-    """Return the distinct physical sources referenced by *expr*."""
-
-    result: set[Source] = set()
-    seen: set[int] = set()
-    stack = [expr]
-    while stack:
-        node = stack.pop()
-        key = id(node)
-        if key in seen:
-            continue
-        seen.add(key)
-        if isinstance(node, Source):
-            result.add(node)
-        elif isinstance(
-            node, (Unary, ScalarBinary, Transpose, Broadcast, Slice, Gather)
-        ):
-            stack.append(node.arg)
-        elif isinstance(node, (ElementwiseBinary, MatMul)):
-            stack.extend((node.left, node.right))
-        else:  # pragma: no cover - sealed semantic node family
-            raise AssertionError(f"unknown matrix expression: {type(node)!r}")
-    return frozenset(result)
-
-
 def relation_names(expr: MatrixExpr) -> frozenset[str]:
     """Return every backend relation referenced by a semantic plan."""
 

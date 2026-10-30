@@ -10,7 +10,6 @@ from hashlib import sha256
 from itertools import count
 from operator import index
 from typing import TYPE_CHECKING, Any
-from uuid import uuid4
 
 import numpy as np
 import pyarrow as pa
@@ -104,7 +103,6 @@ class Backend(ABC):
         self.max_selector_values = max_selector_values
         self.max_selector_relations = max_selector_relations
         self.lowerer = lowerer or IbisLowerer()
-        self.identity = uuid4().hex
         self._names = count()
         self._owned_relations: set[str] = set()
         self._created_relations: set[str] = set()

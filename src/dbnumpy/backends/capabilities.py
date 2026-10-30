@@ -14,8 +14,6 @@ class BackendCapabilities:
     semantic_nodes: frozenset[str]
     reductions: frozenset[str]
     native_pointwise_execution: bool
-    arrow_ingestion: bool = True
-    session_materialization: bool = True
     native_dimension_ranges: bool = True
     native_matrix_market_ingestion: bool = False
     external_parquet_scan: bool = False
