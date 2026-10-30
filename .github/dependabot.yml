@@ -14,6 +14,3 @@ updates:
     groups:
       python:
         patterns: ["*"]
-    # This file records the versions behind past measurements.
-    exclude-paths:
-      - "constraints/tested-py314-macos-arm64.txt"
