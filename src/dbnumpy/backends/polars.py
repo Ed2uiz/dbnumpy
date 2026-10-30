@@ -11,7 +11,12 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 from dbnumpy.backends.base import Backend
-from dbnumpy.backends.datafusion import DataFusionBackend, ParquetPath
+from dbnumpy.backends.parquet import (
+    ParquetPath,
+    resolve_temp_directory,
+    validate_coordinate_schema,
+    validate_parquet_paths,
+)
 from dbnumpy.ir import Source, StorageKind
 from dbnumpy.lowering.polars_sql import to_polars_sql
 
@@ -58,9 +63,7 @@ class PolarsBackend(Backend):
         )
         self.engine = engine
         self.context: Any = pl.SQLContext()
-        self._temp_directory = DataFusionBackend._resolve_temp_directory(  # noqa: SLF001
-            temp_directory
-        )
+        self._temp_directory = resolve_temp_directory(temp_directory)
         self._materialized_files: dict[str, TemporaryDirectory[str]] = {}
 
     @classmethod
@@ -90,11 +93,9 @@ class PolarsBackend(Backend):
             self._check_open()
             rows, cols = self._validate_shape(shape)
             kind = StorageKind(storage)
-            parquet_paths = DataFusionBackend._validate_parquet_paths(paths)  # noqa: SLF001
+            parquet_paths = validate_parquet_paths(paths)
             for path in parquet_paths:
-                DataFusionBackend._validate_coordinate_schema(  # noqa: SLF001
-                    pq.read_schema(path), path=path
-                )
+                validate_coordinate_schema(pq.read_schema(path), path=path)
             frame = pl.scan_parquet(list(parquet_paths)).select(
                 pl.col("i").cast(pl.Int64),
                 pl.col("j").cast(pl.Int64),
