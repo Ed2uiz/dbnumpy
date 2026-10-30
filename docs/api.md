@@ -203,7 +203,7 @@ and caller-owned files. Use a context manager to ensure cleanup on exceptions.
 `PolarsBackend.connect(temp_directory=...)` selects the result-file directory;
 Polars spill files follow its own `POLARS_TEMP_DIR` setting.
 
-In WSL 2, use a Linux temporary directory such as `/tmp`. Large DataFusion 54
+In WSL 2, use a Linux temporary directory such as `/tmp`. Large DataFusion
 writes failed with `Upload aborted` on `/mnt/c` in our tests; the same writes
 completed on the Linux filesystem.
 
