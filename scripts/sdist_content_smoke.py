@@ -20,7 +20,7 @@ REQUIRED_PATHS = (
     "src/dbnumpy/__init__.py",
     "src/dbnumpy/py.typed",
     "tests/conftest.py",
-    "benchmarks/reduction_overhead.py",
+    "benchmarks/brain_preprocessing.py",
     "scripts/artifact_smoke.py",
     "docs/guides/operations.md",
     "examples/vignettes/arithmetic.py",

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import os
 from collections import OrderedDict
-from os import PathLike, fspath
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING, Any
@@ -13,6 +11,12 @@ import numpy as np
 import pyarrow as pa
 
 from dbnumpy.backends.base import Backend
+from dbnumpy.backends.parquet import (
+    ParquetPath,
+    resolve_temp_directory,
+    validate_coordinate_schema,
+    validate_parquet_paths,
+)
 from dbnumpy.ir import MatrixExpr, Source, StorageKind, single_pointwise_source
 from dbnumpy.lowering.datafusion_native import DataFusionPointwiseLowerer
 
@@ -20,8 +24,6 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from dbnumpy.matrix import DBArray
-
-type ParquetPath = str | PathLike[str]
 
 
 class DataFusionBackend(Backend):
@@ -53,7 +55,7 @@ class DataFusionBackend(Backend):
             OrderedDict()
         )
         self._external_parquet_relations: set[str] = set()
-        self._temp_directory = self._resolve_temp_directory(temp_directory)
+        self._temp_directory = resolve_temp_directory(temp_directory)
         self._materialized_files: dict[str, TemporaryDirectory[str]] = {}
 
     @classmethod
@@ -95,7 +97,7 @@ class DataFusionBackend(Backend):
             raise ValueError("max_selector_relations must be nonnegative")
         from datafusion import RuntimeEnvBuilder, SessionConfig, SessionContext
 
-        resolved_temp_directory = cls._resolve_temp_directory(temp_directory)
+        resolved_temp_directory = resolve_temp_directory(temp_directory)
         config = (
             SessionConfig()
             .with_target_partitions(target_partitions)
@@ -134,19 +136,6 @@ class DataFusionBackend(Backend):
             max_selector_relations=max_selector_relations,
         )
 
-    @staticmethod
-    def _resolve_temp_directory(directory: str | Path | None) -> Path | None:
-        if directory is None:
-            return None
-        resolved = Path(directory).expanduser().resolve()
-        if not resolved.is_dir():
-            raise ValueError(
-                f"temp_directory must name an existing directory; got {resolved}"
-            )
-        if not os.access(resolved, os.W_OK | os.X_OK):
-            raise ValueError(f"temp_directory is not writable: {resolved}")
-        return resolved
-
     def from_parquet(
         self,
         paths: ParquetPath | Sequence[ParquetPath],
@@ -173,7 +162,7 @@ class DataFusionBackend(Backend):
             self._check_open()
             rows, cols = self._validate_shape(shape)
             kind = StorageKind(storage)
-            parquet_paths = self._validate_parquet_paths(paths)
+            parquet_paths = validate_parquet_paths(paths)
 
             from datafusion import SessionContext, col
 
@@ -195,7 +184,7 @@ class DataFusionBackend(Backend):
             frames = []
             for path in parquet_paths:
                 frame = self.context.read_parquet(path)
-                self._validate_coordinate_schema(frame.schema(), path=path)
+                validate_coordinate_schema(frame.schema(), path=path)
                 frames.append(
                     frame.select(
                         col("i").cast(pa.int64()).alias("i"),
@@ -225,62 +214,6 @@ class DataFusionBackend(Backend):
                     "float64",
                     kind,
                 )
-            )
-
-    @staticmethod
-    def _validate_parquet_paths(
-        paths: ParquetPath | Sequence[ParquetPath],
-    ) -> tuple[str, ...]:
-        candidates: tuple[ParquetPath, ...]
-        if isinstance(paths, (str, PathLike)):
-            candidates = (paths,)
-        else:
-            candidates = tuple(paths)
-        if not candidates:
-            raise ValueError("at least one Parquet file path is required")
-
-        validated = []
-        for candidate in candidates:
-            try:
-                raw_path = fspath(candidate)
-            except TypeError as exc:
-                raise TypeError(
-                    "Parquet paths must be strings or path-like objects"
-                ) from exc
-            if not isinstance(raw_path, str):
-                raise TypeError("Parquet paths must resolve to strings, not bytes")
-            if not raw_path or "\x00" in raw_path:
-                raise ValueError("Parquet file paths must be nonempty and valid")
-            path = Path(raw_path).expanduser()
-            try:
-                resolved = path.resolve(strict=True)
-            except FileNotFoundError as exc:
-                raise FileNotFoundError(f"Parquet file does not exist: {path}") from exc
-            if not resolved.is_file():
-                raise ValueError(f"Parquet path must identify a regular file: {path}")
-            normalized = str(resolved)
-            if normalized in validated:
-                raise ValueError(f"Parquet file paths must be unique: {path}")
-            validated.append(normalized)
-        return tuple(validated)
-
-    @staticmethod
-    def _validate_coordinate_schema(schema: pa.Schema, *, path: str) -> None:
-        try:
-            i_type = schema.field("i").type
-            j_type = schema.field("j").type
-            x_type = schema.field("x").type
-        except KeyError as exc:
-            raise ValueError(
-                f"Parquet file {path!r} must expose numeric i, j, x columns"
-            ) from exc
-        if not (
-            pa.types.is_integer(i_type)
-            and pa.types.is_integer(j_type)
-            and (pa.types.is_integer(x_type) or pa.types.is_floating(x_type))
-        ):
-            raise ValueError(
-                f"Parquet file {path!r} must expose integer i/j and numeric x columns"
             )
 
     def _register_arrow(self, name: str, table: pa.Table) -> None:

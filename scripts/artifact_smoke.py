@@ -59,7 +59,7 @@ def main() -> None:
             assert (sparse_matrix * np.ones(11)).sum() == 6.0
 
     # Exercise external file input in the installed artifact, including statistics
-    # that must not turn [NaN, 2] into [2, 2] in DataFusion 54.
+    # that must not turn [NaN, 2] into [2, 2] in DataFusion.
     with TemporaryDirectory() as directory, DataFusionBackend.connect() as backend:
         path = Path(directory) / "input.parquet"
         pq.write_table(pa.table({"i": [0, 0], "j": [0, 1], "x": [np.nan, 2.0]}), path)

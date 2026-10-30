@@ -344,10 +344,7 @@ class IbisLowerer:
             else (expr.shape[0] if axis == 0 else expr.shape[1])
         )
         logical_count = ibis.literal(float(count), type="float64")
-        denominator_base = float(
-            Decimal(count)
-            - (Decimal(ddof) if isinstance(ddof, int) else Decimal.from_float(ddof))
-        )
+        denominator_base = float(Decimal(count) - Decimal(ddof))
         infinity = ibis.literal(float("inf"), type="float64")
         finite = ~table.x.isnan() & (table.x != infinity) & (table.x != -infinity)
         scale_window = (
@@ -1469,5 +1466,5 @@ class IbisLowerer:
         if op is ReductionOp.ANY:
             return False
         if op is ReductionOp.ALL:
-            return False if count else True
+            return not count
         return 0.0 if count > ddof else float("nan")

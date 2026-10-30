@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -165,10 +166,8 @@ class DuckDBBackend(Backend):
             self.connection.execute("COMMIT")
         except Exception as exc:
             if transaction_started:
-                try:
+                with contextlib.suppress(Exception):
                     self.connection.execute("ROLLBACK")
-                except Exception:
-                    pass
             if isinstance(exc, (ValueError, OverflowError)):
                 raise
             raise ValueError(f"invalid Matrix Market data in {source}: {exc}") from exc

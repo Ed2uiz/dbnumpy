@@ -10,7 +10,7 @@ execution. It does not test a separate blockwise SciPy implementation or time
 Scanpy itself. The database file formats differ, so the results compare these
 complete input paths as well as their execution engines.
 
-A [follow-up using full WSL RAM](brain-max-ram.md) repeats the same sizes
+A [follow-up using full WSL RAM](#full-ram-follow-up) repeats the same sizes
 with a 7.51 GiB worker ceiling.
 
 ## Pilot results
@@ -91,6 +91,40 @@ confirmed Linux memory-limit kills; none was a timeout or disk-space stop.
 | Total, including final input hashes | 1147.35 |
 
 Download and independent reference calculations are excluded from those figures.
+
+## Full-RAM follow-up
+
+The same sizes were rerun with the worker ceiling at the full 7.51 GiB of WSL
+RAM, swap disabled and half of that as the database budget. One trial per
+configuration; 11 full outputs and 15 sets of summaries passed verification.
+
+### Full workflow, including sparse matrix collection
+
+![Full-RAM full workflow runtime](../assets/brain-max-ram-full.svg)
+
+| Cells | NumPy / SciPy | dbnumpy DuckDB | dbnumpy DataFusion |
+|---:|---:|---:|---:|
+| 5,000 | 3.10 s | 9.23 s | 5.20 s |
+| 10,000 | 6.77 s | 10.13 s | 5.89 s |
+| 25,000 | 22.47 s | 19.65 s | 14.72 s |
+| 50,000 | × RAM limit | 56.22 s | 41.91 s |
+| 100,000 | × RAM limit | × RAM limit | × RAM limit |
+| 250,000 | × RAM limit | × Time limit | × RAM limit |
+
+### Through verified gene summaries
+
+![Full-RAM summary runtime](../assets/brain-max-ram-summaries.svg)
+
+| Cells | NumPy / SciPy | dbnumpy DuckDB | dbnumpy DataFusion |
+|---:|---:|---:|---:|
+| 5,000 | 3.03 s | 7.96 s | 4.24 s |
+| 10,000 | 6.65 s | 8.32 s | 4.46 s |
+| 25,000 | 21.03 s | 14.13 s | 10.88 s |
+| 50,000 | × RAM limit | 28.50 s | 17.90 s |
+| 100,000 | × RAM limit | 47.66 s | 32.72 s |
+| 250,000 | × RAM limit | 103.00 s | 85.17 s |
+
+[Raw measurements and source hashes](../assets/brain-max-ram-results.json)
 
 ## Data
 

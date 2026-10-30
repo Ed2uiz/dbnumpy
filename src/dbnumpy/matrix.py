@@ -18,7 +18,6 @@ from dbnumpy.ir import (
     ReductionOp,
     Scalar,
     ScalarBinary,
-    Slice,
     StorageKind,
     Transpose,
     Unary,
@@ -830,27 +829,6 @@ class DBArray[ScalarT: np.generic]:
                 "lazy vector result types are not implemented yet"
             )
         return self.backend.from_numpy(array)
-
-    def _slice(self, rows: slice, cols: slice) -> DBArray[ScalarT]:
-        row_start, row_stop, row_step = rows.indices(self.shape[0])
-        col_start, col_stop, col_step = cols.indices(self.shape[1])
-        row_count = len(range(row_start, row_stop, row_step))
-        col_count = len(range(col_start, col_stop, col_step))
-        shape = (row_count, col_count)
-        rows_relation, cols_relation = self.backend.dimension_relations(shape)
-        expr = Slice(
-            self._expr,
-            row_start,
-            row_stop,
-            row_step,
-            col_start,
-            col_stop,
-            col_step,
-            shape,
-            rows_relation,
-            cols_relation,
-        )
-        return matrix_from_expr(self.backend, expr)
 
     def _require_same_backend(self, other: DBArray[Any]) -> None:
         if self.backend is not other.backend:

@@ -81,7 +81,6 @@ nav:
       - PBMC preprocessing: guides/pbmc-benchmark.md
       - Memory-limit pilot: guides/pbmc-memory-pressure.md
       - Disk-backed preprocessing: guides/brain-benchmark.md
-      - Full-RAM follow-up: guides/brain-max-ram.md
       - Computing the full matrix: guides/brain-native-compute.md
   - Design:
       - API and limits: api.md

@@ -79,7 +79,6 @@ include = [
   "/LICENSE",
   "/README.md",
   "/benchmarks",
-  "/constraints",
   "/docs",
   "/examples",
   "/mkdocs.yml",

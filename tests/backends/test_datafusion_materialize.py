@@ -214,6 +214,6 @@ def test_null_values_and_a_temp_path_with_spaces(tmp_path):
 def test_temp_directory_must_exist_and_be_writable(tmp_path):
     with pytest.raises(ValueError, match="existing directory"):
         DataFusionBackend.connect(temp_directory=tmp_path / "missing")
-    with patch("dbnumpy.backends.datafusion.os.access", return_value=False):
+    with patch("dbnumpy.backends.parquet.os.access", return_value=False):
         with pytest.raises(ValueError, match="not writable"):
             DataFusionBackend.connect(temp_directory=tmp_path)
