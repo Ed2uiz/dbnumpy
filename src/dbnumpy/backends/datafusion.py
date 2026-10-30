@@ -232,10 +232,7 @@ class DataFusionBackend(Backend):
         paths: ParquetPath | Sequence[ParquetPath],
     ) -> tuple[str, ...]:
         candidates: tuple[ParquetPath, ...]
-        if isinstance(paths, (str, PathLike)):
-            candidates = (paths,)
-        else:
-            candidates = tuple(paths)
+        candidates = (paths,) if isinstance(paths, (str, PathLike)) else tuple(paths)
         if not candidates:
             raise ValueError("at least one Parquet file path is required")
 

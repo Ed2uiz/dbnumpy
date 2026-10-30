@@ -558,9 +558,7 @@ class DBScalar(_LazyRankedResult):
                     (other._expr, self._expr) if reverse else (self._expr, other._expr)
                 )
                 expr: MatrixExpr = ElementwiseBinary(operation, left, right)
-            elif isinstance(other, DBVector):
-                return other._binary(self, operation, reverse=not reverse)
-            elif isinstance(other, DBArray):
+            elif isinstance(other, (DBVector, DBArray)):
                 return other._binary(self, operation, reverse=not reverse)
             elif isinstance(other, (np.ndarray, list, tuple)):
                 array = np.asarray(other)
